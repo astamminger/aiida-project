@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from setuptools import setup
 
 setup(
@@ -8,8 +9,12 @@ setup(
     description="Utility for setting up and managing AiiDA projects",
     long_description="",
     keywords="",
-    url="", 
+    url="",
     classifiers=[
         ''
     ],
+    extras_require={
+        'testing': ['pytest'],
+        'develop': ['pre-commit'],
+    }
 )
