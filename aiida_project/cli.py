@@ -17,7 +17,7 @@ def main():
                     "string if conda is used but also a github url for "
                     "virtualenv or virtualenvwrapper"))
 @click.option('--python', type=str, help="The environment's python version")
-@click.option('--plugins', multiple=True, type=str,
+@click.option('--plugin', 'plugins', multiple=True, type=str,
               help=("One or multiple plugins which will be installed to the "
                     "environment"))
 def create(name, manager, version, python, plugins):
