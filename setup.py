@@ -16,5 +16,8 @@ setup(
     extras_require={
         'testing': ['pytest'],
         'develop': ['pre-commit'],
-    }
+    },
+    entry_points={
+        'console_scripts': ['aiida-project=aiida_project.cli.main:main'],
+    },
 )
