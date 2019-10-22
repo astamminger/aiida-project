@@ -18,6 +18,6 @@ setup(
         'develop': ['pre-commit'],
     },
     entry_points={
-        'console_scripts': ['aiida-project=aiida_project.cli.main:main'],
+        'console_scripts': ['aiida-project=aiida_project.cli:main'],
     },
 )
