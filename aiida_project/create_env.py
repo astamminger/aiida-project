@@ -32,6 +32,7 @@ class CreateEnvBase(object):
     pkg_executable = None
     pkg_commands = None
     pkg_flags = None
+    pkg_flags_source = None  # additional flags used for source install
     pkg_arguments = None
     pkg_list = None
 
@@ -61,10 +62,12 @@ class CreateEnvBase(object):
 
     def install_package_from_index(self):
         """Install a package from the package index."""
+        # this will trigger a simple install
         pass
 
     def install_package_from_source(self):
         """Install a package directly from source."""
+        # this will trigger editable installation
         pass
 
     def _is_source(self, package):
