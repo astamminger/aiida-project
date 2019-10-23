@@ -50,7 +50,7 @@ class CreateEnvBase(object):
         # once we have setup the parent folder we can create the subfolder
         # structure
         create_subfolder = [self.aiida_subfolder]
-        if self._has_source():
+        if self.has_source():
             create_subfolder += [self.source_subfolder]
         for subfolder in create_subfolder:
             project_subfolder = project_topfolder / subfolder
@@ -60,13 +60,26 @@ class CreateEnvBase(object):
         """Install packages to the generated environment."""
         pass
 
-    def install_package_from_index(self):
-        """Install a package from the package index."""
+    def install_packages_from_index(self, packages, env=None):
+        """
+        Install a package from the package index.
+
+        :param list packages: A list of strings defining the package names
+            that will be installed from a package index
+        :param dict env: Optional dictionary containing environment variables
+            passed to the subprocess executing the install
+        """
         # this will trigger a simple install
         pass
 
-    def install_package_from_source(self):
-        """Install a package directly from source."""
+    def install_packages_from_source(self, packages, env=None):
+        """Install a package directly from source.
+
+        :param list packages: A list of strings defining the source urls of
+            packages that will be installed from source
+        :param dict env: Optional dictionary containing environment variables
+            passed to the subprocess executing the install
+        """
         # this will trigger editable installation
         pass
 
@@ -77,10 +90,10 @@ class CreateEnvBase(object):
         else:
             return False
 
-    def _has_source(self):
+    def has_source(self):
         """Check for possible defined installations from source."""
         return any(map(self._is_source, self.pkg_arguments))
 
-    def _execute(self):
+    def execute(self):
         """Execute provided command."""
         pass
