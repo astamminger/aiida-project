@@ -6,5 +6,6 @@ repos:
   - id: check-yaml
   - id: fix-encoding-pragma
   - id: flake8
+    args: ['--ignore=F401']
   - id: trailing-whitespace
 
