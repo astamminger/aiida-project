@@ -70,6 +70,7 @@ class CreateEnvBase(object):
             passed to the subprocess executing the install
         """
         # this will trigger a simple install
+        # build list and install all packages at once
         pass
 
     def install_packages_from_source(self, packages, env=None):
@@ -81,6 +82,9 @@ class CreateEnvBase(object):
             passed to the subprocess executing the install
         """
         # this will trigger editable installation
+        # clone all packages to the appropriate destinations
+        # transform URLs to paths on disk
+        # build list and install all packages at once
         pass
 
     def _is_source(self, package):
