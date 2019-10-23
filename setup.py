@@ -13,6 +13,10 @@ setup(
     classifiers=[
         ''
     ],
+    install_requires=[
+        "pathlib2; python_version<'3.0'",
+        "pathlib; python_version>='3.0'",
+    ],
     extras_require={
         'testing': ['pytest'],
         'develop': ['pre-commit'],
