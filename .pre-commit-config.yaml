@@ -7,5 +7,5 @@ repos:
   - id: fix-encoding-pragma
   - id: trailing-whitespace
   - id: flake8
-    args: ['--ignore=F401']
+    args: ['--ignore=F401,F841']
 
