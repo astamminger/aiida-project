@@ -4,6 +4,7 @@ from aiida_project.utils import assert_package_is_source
 
 import sys
 import re
+import shutil
 
 if sys.version_info >= (3, 0):
     import pathlib as pathlib
@@ -62,7 +63,7 @@ class CreateEnvBase(object):
         """Install packages to the generated environment."""
         pass
 
-    def install_packages_from_index(self, packages, env=None):
+    def install_packages_from_index(self, index_packages, env=None):
         """
         Install a package from the package index.
 
@@ -75,7 +76,7 @@ class CreateEnvBase(object):
         # build list and install all packages at once
         pass
 
-    def install_packages_from_source(self, packages, env=None):
+    def install_packages_from_source(self, source_packages, env=None):
         """Install a package directly from source.
 
         :param list packages: A list of strings defining the source urls of
@@ -93,6 +94,20 @@ class CreateEnvBase(object):
         """Check for possible defined installations from source."""
         return any(map(assert_package_is_source, self.pkg_arguments))
 
+    def create_aiida_project_environment(self):
+        """Create the actual environment."""
+        # create_folder_structure()
+        # create_python_environment()
+        # install_packages_from_index()
+        # install_packages_from_source()
+        # if failed:
+        #    self.exit_on_exception()
+
     def execute(self):
         """Execute provided command."""
         pass
+
+    def exit_on_exception(self):
+        """Cleanup if environment creation fails."""
+        project_topfolder = self.proj_path / self.proj_name
+        shutil.rmtree(project_topfolder)
