@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from aiida_project.utils import assert_package_is_source
+
 import sys
 import re
 
@@ -87,16 +89,9 @@ class CreateEnvBase(object):
         # build list and install all packages at once
         pass
 
-    def _is_source(self, package):
-        """Check if a defined package refers to a source repo."""
-        if re.match(r"https://github.com", package):
-            return True
-        else:
-            return False
-
     def has_source(self):
         """Check for possible defined installations from source."""
-        return any(map(self._is_source, self.pkg_arguments))
+        return any(map(assert_package_is_source, self.pkg_arguments))
 
     def execute(self):
         """Execute provided command."""

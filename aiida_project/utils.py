@@ -32,6 +32,14 @@ def assert_valid_package_def(package_definition):
     return re.fullmatch(regex, package_definition)
 
 
+def assert_package_is_source(self, package):
+    """Check if a defined package refers to a source repo."""
+    if re.match(r"^https://github.com", package):
+        return True
+    else:
+        return False
+
+
 def disassemble_package_def(package_definition):
     """
     Create a valid github URL from a given package definition.
