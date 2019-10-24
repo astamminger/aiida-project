@@ -13,6 +13,25 @@ def clone_git_repo_to_disk(github_url, location):
     pass
 
 
+def assert_valid_aiida_version(aiida_version_string):
+    """Verify that given aiida version is of type N.N.N(a/bN)."""
+    regex = r"^[\d]+\.[\d]+\.([\d]+|[\d]+[ab][\d]+)$"
+    return re.fullmatch(regex, aiida_version_string) is not None
+
+
+def assert_valid_package_def(package_definition):
+    """
+    Verify package definition is formatted as <username>/<repository>:<branch>
+
+    :param str package_definition: String of the form
+        <username>/<repositor>:<branchname> defining the source of a package
+    """
+    charset = r"[A-Za-z0-9_\.\\\-~]"
+    regex = (r"^[{}]+\/[{}]+\:[{}]+$|^[{}]+\/[{}]+$"
+             .format(*(charset,) * 5))
+    return re.fullmatch(regex, package_definition)
+
+
 def disassemble_package_def(package_definition):
     """
     Create a valid github URL from a given package definition.
