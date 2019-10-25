@@ -15,8 +15,12 @@ def clone_git_repo_to_disk(github_url, location):
 
 def assert_valid_aiida_version(aiida_version_string):
     """Verify that given aiida version is of type N.N.N(a/bN)."""
-    regex = r"^[\d]+\.[\d]+\.([\d]+|[\d]+[ab][\d]+)$"
-    return re.fullmatch(regex, aiida_version_string) is not None
+    # Regular expression to check for canonical version format according
+    # to PEP440, taken from https://www.python.org/dev/peps/pep-0440
+    regex = re.compile(r'^([1-9][0-9]*!)?(0|[1-9][0-9]*)'
+                       r'(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?'
+                       r'(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$')
+    return re.match(regex, aiida_version_string) is not None
 
 
 def assert_valid_package_def(package_definition):
