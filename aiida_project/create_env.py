@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from aiida_project.utils import assert_package_is_source
+from aiida_project.utils import (assert_package_is_source, run_command,
+                                 clone_git_repo_to_disk)
+
+import click_spinner
 
 import sys
 import re
@@ -36,13 +39,11 @@ class CreateEnvBase(object):
     pkg_commands = None
     pkg_flags = None
     pkg_flags_source = None  # additional flags used for source install
-    pkg_arguments = None
-    pkg_list = None
 
     # cmd for crearing environment
     cmd_env = "{exe} {cmds} {flags} {args}"
     # cmd for installing packages
-    cmd_install = "{exe} {cmds} {flags} {args} {pkgs}"
+    cmd_install = "{exe} {cmds} {flags} {pkgs}"
 
     def create_folder_structure(self):
         """Setup the environments folder structure."""
@@ -78,10 +79,10 @@ class CreateEnvBase(object):
             'exe': self.pkg_executable,
             'cmds': self.pkg_commands,
             'flags': self.pkg_flags,
-            'args': self.pkg_arguments,
-            'pkgs': self.pkg_list,
+            'pkgs': " ".join(index_packages),
         }
         cmd_install_index = self.cmd_install.format(**cmd_args)
+        print(cmd_install_index)
         # this will trigger a simple install
         # build list and install all packages at once
         pass
@@ -97,12 +98,12 @@ class CreateEnvBase(object):
         # build command for installing packages from source
         cmd_args = {
             'exe': self.pkg_executable,
-            'cmds': self.pkg_commands,
-            'flags': self.pkg_flags_source,
-            'args': self.pkg_arguments,
-            'pkgs': self.pkg_list,
+            'cmds': " ".join(self.pkg_commands),
+            'flags': " ".join(self.pkg_flags_source),
+            'pkgs': " ".join(source_packages),
         }
         cmd_install_source = self.cmd_install.format(**cmd_args)
+        print(cmd_install_source)
         # this will trigger editable installation
         # clone all packages to the appropriate destinations
         # transform URLs to paths on disk
@@ -114,9 +115,9 @@ class CreateEnvBase(object):
         # build command for creating the python environment
         cmd_args = {
             'exe': self.env_executable,
-            'cmds': self.env_commands,
-            'flags': self.env_flags,
-            'args': self.env_arguments,
+            'cmds': " ".join(self.env_commands),
+            'flags': " ".join(self.env_flags),
+            'args': " ".join(self.env_arguments),
         }
         cmd_create_env = self.cmd_env.format(**cmd_args)
 
