@@ -30,18 +30,15 @@ def assert_valid_package_def(package_definition):
     :param str package_definition: String of the form
         <username>/<repositor>:<branchname> defining the source of a package
     """
-    charset = r"[A-Za-z0-9_\.\\\-~]"
+    charset = r"A-Za-z0-9_\.\\\-~"
     regex = (r"^[{}]+\/[{}]+\:[{}]+$|^[{}]+\/[{}]+$"
              .format(*(charset,) * 5))
-    return re.fullmatch(regex, package_definition)
+    return re.match(regex, package_definition) is not None
 
 
 def assert_package_is_source(package):
     """Check if a defined package refers to a source repo."""
-    if re.match(r"^https://github.com", package):
-        return True
-    else:
-        return False
+    return re.match(r"^https://github.com", package) is not None
 
 
 def disassemble_package_def(package_definition):
