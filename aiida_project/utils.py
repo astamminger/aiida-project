@@ -6,7 +6,7 @@ import subprocess
 import click_spinner
 
 
-def clone_git_repo_to_disk(github_url, branch, location):
+def clone_git_repo_to_disk(github_url, location, branch=None):
     """
     Clone the git repository at github_url to location on disk.
 
@@ -14,18 +14,27 @@ def clone_git_repo_to_disk(github_url, branch, location):
     :param str branch: Specific branch of the github repository
     :param str location: path to the location disk
     """
-    git_clone_command = ("git clone --single-branch --branch {branch} "
-                         " {url} {path}".format(branch=branch, url=github_url,
-                                                path=location))
-    proc = subprocess.Popen(git_clone_command, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=True)
+    git_clone_args = ["git", "clone", "--single-branch"]
+    if branch:
+        git_clone_args.append("--branch {}".format(branch))
+    git_clone_args.append("{}".format(github_url))
+    git_clone_args.append("{}".format(location))
+    git_clone_command = " ".join(git_clone_args)
     print("Cloning repository {} ...".format(github_url))
     with click_spinner.spinner():
-        stdout, stderr = proc.communicate()
-    if proc.returncode:
+        errcode, stdout, stderr = run_command(git_clone_command, shell=True)
+    if errcode:
         raise Exception("Cloning the repository from GitHub failed. Used "
                         "command {}, STDERR={}"
                         .format(git_clone_command, stderr.decode()))
+
+
+def run_command(command, shell=True, env=None):
+    """Run a command through python subprocess."""
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, shell=shell, env=env)
+    stdout, stderr = proc.communicate()
+    return (proc.returncode, stdout, stderr)
 
 
 def assert_valid_aiida_version(aiida_version_string):
@@ -56,7 +65,11 @@ def assert_package_is_source(package):
     return re.match(r"^https://github.com", package) is not None
 
 
-def disassemble_package_def(package_definition):
+def assert_package_has_extras(package):
+    return re.search(r"\[.*\]$", package) is not None
+
+
+def unpack_package_def(package_definition):
     """
     Create a valid github URL from a given package definition.
 
@@ -67,6 +80,29 @@ def disassemble_package_def(package_definition):
     :rtype: tuple
     """
     return (re.split(r"[\/\:]", package_definition) + [None])[:3]
+
+
+def unpack_raw_package_input(package):
+    """
+    Split the raw user package input
+
+    Raw input for source packages can be of the form
+    username/repository:branch but could potentially also incude
+    additional extras definitions, i.e.
+    aiidateam/aiida-core:deveop[docs] which need to be removed before
+    further processing of the string.
+    :param str package_definition: String of the form
+        <username>/<repositor>:<branchname>[extras] defining the source of a
+        package including possible extras of the package
+    """
+    extras_regex = r"\[.*\]"
+    package_extras = re.search(extras_regex, package)
+    if package_extras:
+        package_extras = package_extras.group(0)
+        package_definition = re.sub(extras_regex, '', package)
+        return(package_definition, package_extras)
+    else:
+        return (package, None)
 
 
 def check_command_avail(command, test_version=True):
