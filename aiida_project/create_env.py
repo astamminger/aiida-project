@@ -207,9 +207,6 @@ class CreateEnvConda(CreateEnvBase):
     """
     def __init__(self, proj_name, proj_path, python_version, aiida_version,
                  packages):
-        # fail early if any commands are missing
-        self.check_required_commands()
-
         # setup internal variables
         self.proj_name = proj_name
         self.proj_path = proj_path
@@ -238,9 +235,12 @@ class CreateEnvConda(CreateEnvBase):
             "--channel matsci",
             "--prefix {}".format(str(prefix.absolute())),
         ]
-        aiida_core_package = "aiida-core={}".format(aiida_version)
+        aiida_core_package = self.create_aiida_package_entry(aiida_version)
         packages_all = list([aiida_core_package] + packages)
         self.pkg_arguments = packages_all
+
+        # check if required commands are missing
+        self.check_required_commands()
 
         # run check hook to verify inputs
         self.verify_inputs()
@@ -254,8 +254,20 @@ class CreateEnvConda(CreateEnvBase):
             raise Exception("Unable to find the `conda` executable on the "
                             "system. Is anaconda on the PATH?")
 
+    def create_aiida_package_entry(self, aiida_version):
+        """Create the package entry for aiida-core installation."""
+        # fail for any source package definition
+        if utils.assert_package_is_source(aiida_version):
+            raise Exception("Installation from source is only available for "
+                            "`virtualenv` manager")
+        if utils.assert_valid_aiida_version(aiida_version):
+            return "aiida-core={}".format(aiida_version)
+        else:
+            raise Exception("Defined AiiDA version '{}' is malformed!"
+                            .format(aiida_version))
+
     def verify_inputs(self):
-        """Check if inputs are of correct form."""
+        """Check if inputs for additional packages are of correct form."""
         if self.has_source():
             raise Exception("Installation from source is only available for "
                             "`virtualenv` manager")
@@ -271,3 +283,78 @@ class CreateEnvConda(CreateEnvBase):
             self.install_packages_from_index()
         except Exception:
             self.exit_on_exception()
+
+
+class CreateEnvVirtualenv(CreateEnvBase):
+    """
+    Create new python environment using the virtualenv package manager
+    """
+    def __init__(self, proj_name, proj_path, python_version, aiida_version,
+                 packages):
+        # setup internal variables
+        self.proj_name = proj_name
+        self.proj_path = proj_path
+        self.src_subfolder = "src"
+        self.env_subfolder = "env"
+        self.aiida_subfolder = ".aiida"
+
+        #  # environment
+        #  prefix = self.env_folder / self.proj_name
+        #  self.env_executable = "conda"
+        #  self.env_commands = ["create"]
+        #  self.env_flags = [
+        #      "--yes",
+        #      "--prefix {}".format(str(prefix.absolute())),
+        #  ]
+        #  self.env_arguments = [
+        #      "python={}".format(python_version),
+        #  ]
+        #  # additional packages
+        #  self.pkg_executable = "conda"
+        #  self.pkg_commands = ["install"]
+        #  self.pkg_flags = [
+        #      "--yes",
+        #      "--channel conda-forge",
+        #      "--channel bioconda",
+        #      "--channel matsci",
+        #      "--prefix {}".format(str(prefix.absolute())),
+        #  ]
+        aiida_core_package = self.create_aiida_package_entry(aiida_version)
+        packages_all = list([aiida_core_package] + packages)
+        self.pkg_arguments = packages_all
+
+        # check if required commands are missing
+        self.check_required_commands()
+
+        #  # run check hook to verify inputs
+        #  self.verify_inputs()
+
+    def check_required_commands(self):
+        """Check required commands are available on the system."""
+        # always check for `virtualenv` manager
+        venv_avail = utils.check_command_avail('virtualenv')
+        if not venv_avail:
+            raise Exception("Unable to find the `virtualenv` executable on "
+                            "the system. Is virtualenv on the PATH?")
+        # check for git as well but only fail if packages are actually
+        # marked to be installed from source
+        git_avail = utils.check_command_avail('git')
+        if not git_avail and self.has_source():
+            raise Exception("Unable to find `git` on the system but some "
+                            "packages are defined to be installed from "
+                            "source. Either install git or switch to "
+                            "non-source installation!")
+
+    def create_aiida_package_entry(self, aiida_version):
+        """Create the package entry for aiida-core installation."""
+        # directly return if aiida-core is defined to be installed from source
+        if utils.assert_package_is_source(aiida_version):
+            return aiida_version
+        # otherwise: check if version is OK an build the package definition
+        # understood by PiP
+        else:
+            if utils.assert_valid_aiida_version(aiida_version):
+                return "aiida-core=={}".format(aiida_version)
+            else:
+                raise Exception("Defined AiiDA version '{}' is malformed!"
+                                .format(aiida_version))
