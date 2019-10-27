@@ -2,19 +2,18 @@
 
 from __future__ import print_function
 
-from aiida_project import utils
-
-import click
-import click_spinner
-
 import sys
 import re
 import shutil
-
 if sys.version_info >= (3, 0):
     import pathlib as pathlib
 else:
     import pathlib2 as pathlib
+
+import click
+import click_spinner
+
+from aiida_project import utils
 
 
 """
