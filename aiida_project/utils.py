@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import re
 import subprocess
 
@@ -139,10 +141,13 @@ def check_command_avail(command, test_version=True):
         command_to_check = command
     proc = subprocess.Popen(command_to_check, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
+    print("Checking '{}' ... ".format(command_to_check), end="")
     stdout, stderr = proc.communicate()
     if proc.returncode:
+        print("Failed")
         return False
     else:
+        print("OK")
         return True
 
 
