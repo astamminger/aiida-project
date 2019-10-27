@@ -17,6 +17,8 @@ setup(
     install_requires=[
         "pathlib2; python_version<'3.0'",
         "pathlib; python_version>='3.0'",
+        "click",
+        "click-spinner",
     ],
     extras_require={
         'testing': ['pytest'],
