@@ -22,11 +22,13 @@ Create AiiDA project environment and install packages
 
 
 class CreateEnvBase(object):
+    """Base class for setting up python environments programatically."""
 
     # define environment name and locations
     proj_name = None
     proj_path = None
-    source_subfolder = 'src'
+    src_subfolder = 'src'
+    env_subfolder = 'env'
     aiida_subfolder = '.aiida'
 
     # define the command for creating an environment
@@ -47,19 +49,29 @@ class CreateEnvBase(object):
     # cmd for installing packages
     cmd_install = "{exe} {cmds} {flags} {pkgs}"
 
+    @property
+    def proj_folder(self):
+        return self.proj_path / self.proj_name
+
+    @property
+    def env_folder(self):
+        return self.proj_folder / self.env_subfolder
+
+    @property
+    def src_folder(self):
+        return self.proj_folder / self.src_subfolder
+
     def create_folder_structure(self):
         """Setup the environments folder structure."""
-        # first we try to create the parent folder to determine if it
-        # exists already
-        project_topfolder = self.proj_path / self.proj_name
-        project_topfolder.mkdir(exist_ok=False)
+        # create the parent folder holding the project
+        self.proj_folder.mkdir(exist_ok=False)
         # once we have setup the parent folder we can create the subfolder
         # structure
-        create_subfolder = [self.aiida_subfolder]
+        create_subfolder = [self.aiida_subfolder, self.env_subfolder]
         if self.has_source():
-            create_subfolder += [self.source_subfolder]
+            create_subfolder += [self.src_subfolder]
         for subfolder in create_subfolder:
-            project_subfolder = project_topfolder / subfolder
+            project_subfolder = self.proj_folder / subfolder
             project_subfolder.mkdir(exist_ok=False)
 
     def install_packages_from_index(self, env=None, debug=False):
@@ -108,8 +120,7 @@ class CreateEnvBase(object):
             username, repo, branch = utils.unpack_package_def(pkg_def)
             github_url = utils.build_source_url(username, repo)
             # put source in source_subfolder / repository_name
-            clone_path = (self.proj_path / self.proj_name
-                          / self.source_subfolder / repo)
+            clone_path = self.src_folder / repo
             clone_path_str = str(clone_path.absolute())
             # clone repository to disk
             utils.clone_git_repo_to_disk(github_url, clone_path_str,
@@ -153,22 +164,9 @@ class CreateEnvBase(object):
             raise Exception("Environment setup failed (STDERR: {}"
                             .format(stderr))
 
-    def create_aiida_project_environment(self):
-        """This command defines the steps to create the actual environment."""
-        # i.e.
-        # try:
-        #   create_folder_structure()
-        #   create_python_environment()
-        #   install_packages_from_index()
-        #   install_packages_from_source()
-        # except:
-        #    exit_on_exception()
-        raise NotImplementedError("Must be implemented in the subclass")
-
     def exit_on_exception(self):
         """Cleanup if environment creation fails."""
-        project_topfolder = self.proj_path / self.proj_name
-        shutil.rmtree(str(project_topfolder.absolute()))
+        shutil.rmtree(str(self.proj_folder.absolute()))
 
     def has_source(self):
         """Check for possible defined installations from source."""
@@ -177,3 +175,42 @@ class CreateEnvBase(object):
     def has_extras(self):
         """Check for possible package definitions with extras."""
         return any(map(utils.assert_package_has_extras, self.pkg_arguments))
+
+
+class CreateEnvConda(CreateEnvBase):
+    """
+    Create new python environment using the conda package manager
+    """
+    def __init__(self, proj_name, proj_path, python_version, aiida_version,
+                 packages):
+        # define environment name and locations
+        # self.proj_name = proj_name
+        # self.proj_path = proj_path
+        # self.source_subfolder = 'src'
+        # self.aiida_subfolder = '.aiida'
+        #
+        # # define the command for creating an environment
+        # self.env_executable = None
+        # self.env_commands = None
+        # self.env_flags = None
+        # self.env_arguments = None
+        #
+        # # define the command for installing packages
+        # self.pkg_executable = None
+        # self.pkg_commands = None
+        # self.pkg_flags = None
+        # self.pkg_flags_source = None  # additional flags for source install
+        # self.pkg_arguments = None
+        pass
+
+    def create_aiida_project_environment(self):
+        """Create the folder structure and initialize the environment."""
+        pass
+        # i.e.
+        # try:
+        #   create_folder_structure()
+        #   create_python_environment()
+        #   install_packages_from_index()
+        #   install_packages_from_source()
+        # except:
+        #    exit_on_exception()
