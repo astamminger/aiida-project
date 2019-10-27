@@ -10,6 +10,7 @@ setup(
     long_description="",
     keywords="",
     url="",
+    packages=["aiida_project"],
     classifiers=[
         ''
     ],
