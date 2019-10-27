@@ -139,11 +139,9 @@ def check_command_avail(command, test_version=True):
         command_to_check = "{} --version".format(command)
     else:
         command_to_check = command
-    proc = subprocess.Popen(command_to_check, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=True)
     print("Checking '{}' ... ".format(command_to_check), end="")
-    stdout, stderr = proc.communicate()
-    if proc.returncode:
+    errno, stdout, stderr = run_command(command_to_check, shell=True)
+    if errno:
         print("Failed")
         return False
     else:
