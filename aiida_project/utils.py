@@ -6,7 +6,7 @@ import subprocess
 import click_spinner
 
 
-def clone_git_repo_to_disk(github_url, location, branch=None):
+def clone_git_repo_to_disk(github_url, location, branch=None, debug=False):
     """
     Clone the git repository at github_url to location on disk.
 
@@ -20,6 +20,8 @@ def clone_git_repo_to_disk(github_url, location, branch=None):
     git_clone_args.append("{}".format(github_url))
     git_clone_args.append("{}".format(location))
     git_clone_command = " ".join(git_clone_args)
+    if debug:
+        return git_clone_command
     print("Cloning repository {} ...".format(github_url))
     with click_spinner.spinner():
         errcode, stdout, stderr = run_command(git_clone_command, shell=True)
@@ -27,6 +29,17 @@ def clone_git_repo_to_disk(github_url, location, branch=None):
         raise Exception("Cloning the repository from GitHub failed. Used "
                         "command {}, STDERR={}"
                         .format(git_clone_command, stderr.decode()))
+
+
+def build_source_url(username, repository):
+    """
+    Create valid GitHub url for a user's repository.
+
+    :param str username: username of the repository owner
+    :param str repository: name of the target repository
+    """
+    base_url = 'https://github.com/{username}/{repository}'
+    return base_url.format(username=username, repository=repository)
 
 
 def run_command(command, shell=True, env=None):
@@ -60,9 +73,14 @@ def assert_valid_package_def(package_definition):
     return re.match(regex, package_definition) is not None
 
 
-def assert_package_is_source(package):
+def assert_package_is_source(package_definition):
     """Check if a defined package refers to a source repo."""
-    return re.match(r"^https://github.com", package) is not None
+    # basically identical to assert_valid_package_def but this regex will
+    # also match <username>/<repository>:<branchname>[extras]
+    charset = r"A-Za-z0-9_\.\\\-~"
+    regex = (r"^[{}]+\/[{}]+\:[{}]+$|^[{}]+\/[{}]+"
+             .format(*(charset,) * 5))
+    return re.search(regex, package_definition) is not None
 
 
 def assert_package_has_extras(package):
@@ -102,7 +120,7 @@ def unpack_raw_package_input(package):
         package_definition = re.sub(extras_regex, '', package)
         return(package_definition, package_extras)
     else:
-        return (package, None)
+        return (package, '')
 
 
 def check_command_avail(command, test_version=True):
@@ -126,3 +144,10 @@ def check_command_avail(command, test_version=True):
         return False
     else:
         return True
+
+
+def with_spinner(func):
+    def wrapper(*args, **kwargs):
+        with click_spinner.spinner():
+            func(*args, **kwargs)
+    return wrapper
