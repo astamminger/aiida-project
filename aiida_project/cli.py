@@ -32,6 +32,12 @@ def create(name, manager, aiida_core, python_version, plugins, pkgs):
     packages = list(plugins + pkgs)
     # b = EnvBuilder(current_folder, aiida_core, python, packages)
     # b.create_environment()
+    # check if folder is there and ask to delete
+    # msg = ("Cannot create project folder '{}' because it exists "
+    #        "already! Delete?".format(project_topfolder))
+    # delete = click.confirm(msg)
+    # if delete:
+    #     shutil.rmtree(project_topfolder)
     print(manager)
     print(aiida_core)
     print(python_version)

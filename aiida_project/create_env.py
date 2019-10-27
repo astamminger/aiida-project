@@ -52,20 +52,8 @@ class CreateEnvBase(object):
         """Setup the environments folder structure."""
         # first we try to create the parent folder to determine if it
         # exists already
-        try:
-            project_topfolder = self.proj_path / self.proj_name
-            project_topfolder.mkdir(exist_ok=False)
-        except FileExistsError as exception:
-            msg = ("Cannot create project folder '{}' because it exists "
-                   "already! Delete?".format(project_topfolder))
-            delete = click.confirm(msg)
-            if delete:
-                shutil.rmtree(project_topfolder)
-                project_topfolder.mkdir(exist_ok=False)
-            else:
-                msg = ("Project folder creation failed because the folder "
-                       "already exists!")
-                raise FileExistsError(msg) from exception
+        project_topfolder = self.proj_path / self.proj_name
+        project_topfolder.mkdir(exist_ok=False)
         # once we have setup the parent folder we can create the subfolder
         # structure
         create_subfolder = [self.aiida_subfolder]
