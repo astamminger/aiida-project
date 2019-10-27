@@ -180,37 +180,94 @@ class CreateEnvBase(object):
 class CreateEnvConda(CreateEnvBase):
     """
     Create new python environment using the conda package manager
+
+    Running the create_aiida_project_environment() function will create
+    a new project folder with name `proj_name` in the directory defined by
+    `proj_path`. It will then create the `.aiida` folder in the created
+    folder and install a new python environment to the `env` subfolder.
+
+    :param str proj_name: Name of the new AiiDA project (This is also going
+        to be the name of the created conda environment)
+    :param str proj_path: Path to the topfolder containing the new project
+    :param str python_version: Python version to be used for the
+        environment (expected format: 'N.M', i.e. '2.7', '3.6' ...)
+    :param str aiida_version: AiiDA version which will be installed in the
+        environment. (accepts any version format that is understood by the
+        conda installer, i.e. 1.0.0, 1.0.0b5, ...)
+    :param list package: A list of additional packages which will be installed
+        in addition to aiida-core (accepts any package format that is
+        understood by conda, i.e. 'postgresql', 'postgresql=11.4', ...)
+
+    :raises Exception: if any package is defined as source package (i.e. the
+        package definition is of the form aiidateam/aiida-ase,
+        aiidateam/aiida-ase:master, ...)
+    :raises Exception: if any package defines extras to be installed (i.e.
+        package definition is of the form package[extra])
+    :raises Exception: if conda is not found on the system
     """
     def __init__(self, proj_name, proj_path, python_version, aiida_version,
                  packages):
-        # define environment name and locations
-        # self.proj_name = proj_name
-        # self.proj_path = proj_path
-        # self.source_subfolder = 'src'
-        # self.aiida_subfolder = '.aiida'
-        #
-        # # define the command for creating an environment
-        # self.env_executable = None
-        # self.env_commands = None
-        # self.env_flags = None
-        # self.env_arguments = None
-        #
-        # # define the command for installing packages
-        # self.pkg_executable = None
-        # self.pkg_commands = None
-        # self.pkg_flags = None
-        # self.pkg_flags_source = None  # additional flags for source install
-        # self.pkg_arguments = None
-        pass
+        # fail early if any commands are missing
+        self.check_required_commands()
+
+        # setup internal variables
+        self.proj_name = proj_name
+        self.proj_path = proj_path
+        self.src_subfolder = "src"
+        self.env_subfolder = "env"
+        self.aiida_subfolder = ".aiida"
+
+        # environment
+        prefix = self.env_folder / self.proj_name
+        self.env_executable = "conda"
+        self.env_commands = ["create"]
+        self.env_flags = [
+            "--yes",
+            "--prefix {}".format(str(prefix.absolute())),
+        ]
+        self.env_arguments = [
+            "python={}".format(python_version),
+        ]
+        # additional packages
+        self.pkg_executable = "conda"
+        self.pkg_commands = ["install"]
+        self.pkg_flags = [
+            "--yes",
+            "--channel conda-forge",
+            "--channel bioconda",
+            "--channel matsci",
+            "--prefix {}".format(str(prefix.absolute())),
+        ]
+        aiida_core_package = "aiida-core={}".format(aiida_version)
+        packages_all = list([aiida_core_package] + packages)
+        self.pkg_arguments = packages_all
+
+        # run check hook to verify inputs
+        self.verify_inputs()
+
+    def check_required_commands(self):
+        """Check required commands are available on the system."""
+        # no need to check for git in the conda installer since we do not
+        # allow source installes, we only check for conda
+        conda_avail = utils.check_command_avail('conda')
+        if not conda_avail:
+            raise Exception("Unable to find the `conda` executable on the "
+                            "system. Is anaconda on the PATH?")
+
+    def verify_inputs(self):
+        """Check if inputs are of correct form."""
+        if self.has_source():
+            raise Exception("Installation from source is only available for "
+                            "`virtualenv` manager")
+        if self.has_extras():
+            raise Exception("Installation of extras only possible for "
+                            "`virtualenv` manager")
 
     def create_aiida_project_environment(self):
         """Create the folder structure and initialize the environment."""
-        pass
-        # i.e.
-        # try:
-        #   create_folder_structure()
-        #   create_python_environment()
-        #   install_packages_from_index()
-        #   install_packages_from_source()
-        # except:
-        #    exit_on_exception()
+        try:
+            self.create_folder_structure()
+            self.create_python_environment()
+            self.install_packages_from_index()
+        except Exception:
+            self.exit_on_exception()
