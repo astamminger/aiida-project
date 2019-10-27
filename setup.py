@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="aiida-project",
-    version="0.0.0",
+    version="0.0.1",
     author="Andreas Stamminger",
     author_email="stammingera@gmail.com",
     description="Utility for setting up and managing AiiDA projects",
     long_description="",
     keywords="",
     url="",
-    packages=["aiida_project"],
+    packages=find_packages(),
     classifiers=[
         ''
     ],
