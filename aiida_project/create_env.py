@@ -5,6 +5,7 @@ from __future__ import print_function
 import sys
 import re
 import shutil
+import os
 if sys.version_info >= (3, 0):
     import pathlib as pathlib
 else:
@@ -51,15 +52,15 @@ class CreateEnvBase(object):
 
     @property
     def proj_folder(self):
-        return self.proj_path / self.proj_name
+        return (self.proj_path / self.proj_name).absolute()
 
     @property
     def env_folder(self):
-        return self.proj_folder / self.env_subfolder
+        return (self.proj_folder / self.env_subfolder).absolute()
 
     @property
     def src_folder(self):
-        return self.proj_folder / self.src_subfolder
+        return (self.proj_folder / self.src_subfolder).absolute()
 
     def create_folder_structure(self):
         """Setup the environments folder structure."""
@@ -86,6 +87,10 @@ class CreateEnvBase(object):
         # extract non-source packages from package list
         index_packages = [p for p in self.pkg_arguments if not
                           utils.assert_package_is_source(p)]
+        # skip this step if there are no packages to be installed
+        if not index_packages:
+            print("No index packages set for installation. Skipping ...")
+            return
         # build command for installing packages from index
         cmd_args = {
             'exe': self.pkg_executable,
@@ -113,6 +118,10 @@ class CreateEnvBase(object):
         # extract all source packages from package list
         source_packages = [p for p in self.pkg_arguments if
                            utils.assert_package_is_source(p)]
+        # skip this step if there are no packages to be installed
+        if not source_packages:
+            print("No source packages set for installation. Skipping ...")
+            return
         # process the raw user inputs
         pkg_install_paths = []
         for package in source_packages:
@@ -279,7 +288,7 @@ class CreateEnvConda(CreateEnvBase):
         """Create the folder structure and initialize the environment."""
         try:
             self.create_folder_structure()
-            self.create_python_environment()
+            self.build_python_environment()
             self.install_packages_from_index()
         except Exception:
             self.exit_on_exception()
@@ -298,36 +307,27 @@ class CreateEnvVirtualenv(CreateEnvBase):
         self.env_subfolder = "env"
         self.aiida_subfolder = ".aiida"
 
-        #  # environment
-        #  prefix = self.env_folder / self.proj_name
-        #  self.env_executable = "conda"
-        #  self.env_commands = ["create"]
-        #  self.env_flags = [
-        #      "--yes",
-        #      "--prefix {}".format(str(prefix.absolute())),
-        #  ]
-        #  self.env_arguments = [
-        #      "python={}".format(python_version),
-        #  ]
-        #  # additional packages
-        #  self.pkg_executable = "conda"
-        #  self.pkg_commands = ["install"]
-        #  self.pkg_flags = [
-        #      "--yes",
-        #      "--channel conda-forge",
-        #      "--channel bioconda",
-        #      "--channel matsci",
-        #      "--prefix {}".format(str(prefix.absolute())),
-        #  ]
+        # environment
+        prefix = self.env_folder / self.proj_name
+        self.env_executable = "virtualenv"
+        self.env_commands = []
+        self.env_flags = [
+            "--python=python{}".format(python_version),
+        ]
+        self.env_arguments = [
+            str(prefix),
+        ]
+        # additional packages
+        self.pkg_executable = "pip"
+        self.pkg_commands = ["install"]
+        self.pkg_flags = ["--pre"]
+        self.pkg_flags_source = ["--editable"]
         aiida_core_package = self.create_aiida_package_entry(aiida_version)
         packages_all = list([aiida_core_package] + packages)
         self.pkg_arguments = packages_all
 
         # check if required commands are missing
         self.check_required_commands()
-
-        #  # run check hook to verify inputs
-        #  self.verify_inputs()
 
     def check_required_commands(self):
         """Check required commands are available on the system."""
@@ -358,3 +358,22 @@ class CreateEnvVirtualenv(CreateEnvBase):
             else:
                 raise Exception("Defined AiiDA version '{}' is malformed!"
                                 .format(aiida_version))
+
+    def create_aiida_project_environment(self):
+        """Create the folder structure and initialize the environment."""
+        # mock the virtualenv activation procedure
+        venv_prefix = self.env_folder / self.proj_name
+        current_env = os.environ.copy()
+        current_env.pop('PYTHONHOME', None)
+        current_env['VIRTUAL_ENV'] = venv_prefix
+        old_path = current_env['PATH']
+        new_path = str(venv_prefix / 'bin') + os.pathsep + old_path
+        current_env['PATH'] = new_path
+        try:
+            self.create_folder_structure()
+            self.build_python_environment()
+            self.install_packages_from_index(env=current_env)
+            self.install_packages_from_source(env=current_env)
+        except Exception:
+            raise
+            self.exit_on_exception()
