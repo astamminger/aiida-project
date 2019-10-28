@@ -70,6 +70,8 @@ def create(name, manager, aiida_core, python_version, packages, path):
             shutil.rmtree(project_folder)
         else:
             sys.exit(1)
+    print(project_folder)
+    print(path)
     # fetch and setup the chosen environment manager
     EnvCreator = get_env_creator(manager)
     creator = EnvCreator(proj_name=name, proj_path=pathlib.Path(path),

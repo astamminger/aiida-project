@@ -382,3 +382,15 @@ class CreateEnvVirtualenv(CreateEnvBase):
         except Exception:
             raise
             self.exit_on_exception()
+
+
+def get_env_creator(manager):
+    creator_map = {
+        'conda': CreateEnvConda,
+        'virtualenv': CreateEnvVirtualenv,
+    }
+    try:
+        return creator_map[manager]
+    except KeyError:
+        raise Exception("Unknown environment manager `{}` (available "
+                        "managers: {})".format(manager, creator_map.keys()))
