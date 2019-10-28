@@ -45,7 +45,7 @@ class CreateEnvBase(object):
     pkg_flags_source = None  # additional flags used for source install
     pkg_arguments = None
 
-    # cmd for crearing environment
+    # cmd for creating environment
     cmd_env = "{exe} {cmds} {flags} {args}"
     # cmd for installing packages
     cmd_install = "{exe} {cmds} {flags} {pkgs}"
@@ -101,8 +101,10 @@ class CreateEnvBase(object):
         cmd_install_index = self.cmd_install.format(**cmd_args)
         if debug:
             return cmd_install_index
-        errno, stdout, stderr = utils.run_command(cmd_install_index, env=env,
-                                                  shell=True)
+        print("Installing index packages to environment ...")
+        with click_spinner.spinner():
+            errno, stdout, stderr = utils.run_command(cmd_install_index,
+                                                      env=env, shell=True)
         if errno:
             raise Exception("Installation of packages failed (STDERR: {}"
                             .format(stderr))
@@ -115,15 +117,15 @@ class CreateEnvBase(object):
         :param dict env: Optional dictionary containing environment variables
             passed to the subprocess executing the install
         """
-        # extract all source packages from package list
         source_packages = [p for p in self.pkg_arguments if
                            utils.assert_package_is_source(p)]
         # skip this step if there are no packages to be installed
         if not source_packages:
             print("No source packages set for installation. Skipping ...")
             return
-        # process the raw user inputs
+        # clone and install defined source packages
         pkg_install_paths = []
+        print("Installing source packages to environment ... ")
         for package in source_packages:
             pkg_def, pkg_extras = utils.unpack_raw_package_input(package)
             username, repo, branch = utils.unpack_package_def(pkg_def)
@@ -137,23 +139,23 @@ class CreateEnvBase(object):
             # build entry of the form path_to_package[extras] which will
             # be passed to the pip installer
             pkg_install_path = "{}{}".format(clone_path_str, pkg_extras)
-            pkg_install_paths.append(pkg_install_path)
 
-        # build command for installing packages from source
-        cmd_args = {
-            'exe': self.pkg_executable,
-            'cmds': " ".join(self.pkg_commands),
-            'flags': " ".join(self.pkg_flags_source),
-            'pkgs': " ".join(pkg_install_paths),
-        }
-        cmd_install_source = self.cmd_install.format(**cmd_args)
-        if debug:
-            return cmd_install_source
-        errno, stdout, stderr = utils.run_command(cmd_install_source, env=env,
-                                                  shell=True)
-        if errno:
-            raise Exception("Installation of packages failed (STDERR: {}"
-                            .format(stderr))
+            # build command for installing packages from source
+            cmd_args = {
+                'exe': self.pkg_executable,
+                'cmds': " ".join(self.pkg_commands),
+                'flags': " ".join(self.pkg_flags_source),
+                'pkgs': pkg_install_path,
+            }
+            cmd_install_source = self.cmd_install.format(**cmd_args)
+            if debug:
+                return cmd_install_source
+            with click_spinner.spinner():
+                errno, stdout, stderr = utils.run_command(cmd_install_source,
+                                                          env=env, shell=True)
+            if errno:
+                raise Exception("Installation of packages failed (STDERR: {}"
+                                .format(stderr))
 
     def build_python_environment(self, debug=False):
         """Create the python environment with specified python version."""
@@ -167,8 +169,11 @@ class CreateEnvBase(object):
         cmd_create_env = self.cmd_env.format(**cmd_args)
         if debug:
             return cmd_create_env
-        errno, stdout, stderr = utils.run_command(cmd_create_env, env=None,
-                                                  shell=True)
+        print("Building new python environment ({}) ... "
+              .format(self.proj_name))
+        with click_spinner.spinner():
+            errno, stdout, stderr = utils.run_command(cmd_create_env, env=None,
+                                                      shell=True)
         if errno:
             raise Exception("Environment setup failed (STDERR: {}"
                             .format(stderr))
