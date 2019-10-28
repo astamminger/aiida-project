@@ -30,7 +30,7 @@ def clone_git_repo_to_disk(github_url, location, branch=None, debug=False):
     if errcode:
         raise Exception("Cloning the repository from GitHub failed. Used "
                         "command {}, STDERR={}"
-                        .format(git_clone_command, stderr.decode()))
+                        .format(git_clone_command, stderr))
 
 
 def build_source_url(username, repository):
@@ -49,7 +49,7 @@ def run_command(command, shell=True, env=None):
     proc = subprocess.Popen(command, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=shell, env=env)
     stdout, stderr = proc.communicate()
-    return (proc.returncode, stdout, stderr)
+    return (proc.returncode, stdout.decode(), stderr.decode())
 
 
 def assert_valid_aiida_version(aiida_version_string):
