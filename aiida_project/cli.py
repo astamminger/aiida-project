@@ -13,23 +13,19 @@ def main():
 @click.option('--manager', type=click.Choice(["conda", "venv"]),
               default="venv",
               help="Manager to be used for creating the environment")
-@click.option('--aiida', 'aiida_core', type=str, default=None,
+@click.option('--aiida', 'aiida_core', type=str,
               help=("AiiDA version to install. This may be either a version "
                     "string if conda is used but also a github url for "
                     "virtualenv or virtualenvwrapper"))
 @click.option('--python', 'python_version', type=str, default="3.6",
-              help="The environment's python version")
-@click.option('--plugin', 'plugins', multiple=True, type=str,
-              help=("One or multiple plugins which will be installed to the "
-                    "environment"))
-@click.option('--pkg', 'pkgs', multiple=True, type=str,
+              help="The environments python version")
+@click.option('--utility-pkg', 'packages', multiple=True, type=str,
               help=("One or multiple additional packages (i.e. plugins etc.) "
                     "that will be installed to the environment."))
-def create(name, manager, aiida_core, python_version, plugins, pkgs):
+def create(name, manager, aiida_core, python_version, packages):
     """Create a new AiiDA project environment with name NAME."""
     # other packages to be installed, i.e. plugins or auxiliary
     # packages like postgresql etc.
-    packages = list(plugins + pkgs)
     # b = EnvBuilder(current_folder, aiida_core, python, packages)
     # b.create_environment()
     # check if folder is there and ask to delete
