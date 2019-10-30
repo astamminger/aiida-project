@@ -75,7 +75,7 @@ class CreateEnvBase(object):
             project_subfolder = self.proj_folder / subfolder
             project_subfolder.mkdir(exist_ok=False)
 
-    def install_packages_from_index(self, env=None, debug=False):
+    def install_packages_from_index(self, env=None):
         """
         Install a package from the package index.
 
@@ -99,8 +99,6 @@ class CreateEnvBase(object):
             'pkgs': " ".join(index_packages),
         }
         cmd_install_index = self.cmd_install.format(**cmd_args)
-        if debug:
-            return cmd_install_index
         print("Installing index packages to environment ...")
         with click_spinner.spinner():
             errno, stdout, stderr = utils.run_command(cmd_install_index,
@@ -109,7 +107,7 @@ class CreateEnvBase(object):
             raise Exception("Installation of packages failed (STDERR: {}"
                             .format(stderr))
 
-    def install_packages_from_source(self, env=None, debug=False):
+    def install_packages_from_source(self, env=None):
         """Install a package directly from source.
 
         :param list packages: A list of strings defining the source urls of
@@ -124,7 +122,6 @@ class CreateEnvBase(object):
             print("No source packages set for installation. Skipping ...")
             return
         # clone and install defined source packages
-        pkg_install_paths = []
         print("Installing source packages to environment ... ")
         for package in source_packages:
             pkg_def, pkg_extras = utils.unpack_raw_package_input(package)
@@ -135,11 +132,10 @@ class CreateEnvBase(object):
             clone_path_str = str(clone_path.absolute())
             # clone repository to disk
             utils.clone_git_repo_to_disk(github_url, clone_path_str,
-                                         branch=branch, debug=debug)
+                                         branch=branch)
             # build entry of the form path_to_package[extras] which will
             # be passed to the pip installer
             pkg_install_path = "{}{}".format(clone_path_str, pkg_extras)
-
             # build command for installing packages from source
             cmd_args = {
                 'exe': self.pkg_executable,
@@ -148,8 +144,6 @@ class CreateEnvBase(object):
                 'pkgs': pkg_install_path,
             }
             cmd_install_source = self.cmd_install.format(**cmd_args)
-            if debug:
-                return cmd_install_source
             with click_spinner.spinner():
                 errno, stdout, stderr = utils.run_command(cmd_install_source,
                                                           env=env, shell=True)
@@ -157,7 +151,7 @@ class CreateEnvBase(object):
                 raise Exception("Installation of packages failed (STDERR: {}"
                                 .format(stderr))
 
-    def build_python_environment(self, debug=False):
+    def build_python_environment(self):
         """Create the python environment with specified python version."""
         # build command for creating the python environment
         cmd_args = {
@@ -167,8 +161,6 @@ class CreateEnvBase(object):
             'args': " ".join(self.env_arguments),
         }
         cmd_create_env = self.cmd_env.format(**cmd_args)
-        if debug:
-            return cmd_create_env
         print("Building new python environment ({}) ... "
               .format(self.proj_name))
         with click_spinner.spinner():

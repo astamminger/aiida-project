@@ -8,7 +8,7 @@ import subprocess
 import click_spinner
 
 
-def clone_git_repo_to_disk(github_url, location, branch=None, debug=False):
+def clone_git_repo_to_disk(github_url, location, branch=None):
     """
     Clone the git repository at github_url to location on disk.
 
@@ -22,8 +22,6 @@ def clone_git_repo_to_disk(github_url, location, branch=None, debug=False):
     git_clone_args.append("{}".format(github_url))
     git_clone_args.append("{}".format(location))
     git_clone_command = " ".join(git_clone_args)
-    if debug:
-        return git_clone_command
     print("Cloning repository {} ...".format(github_url))
     with click_spinner.spinner():
         errcode, stdout, stderr = run_command(git_clone_command, shell=True)
