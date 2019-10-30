@@ -21,7 +21,7 @@ setup(
         "click-spinner",
     ],
     extras_require={
-        'testing': ['pytest'],
+        'testing': ['pytest', 'pytest-cov'],
         'develop': ['pre-commit'],
     },
     entry_points={
