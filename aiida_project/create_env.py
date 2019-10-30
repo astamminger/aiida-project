@@ -167,7 +167,7 @@ class CreateEnvBase(object):
             errno, stdout, stderr = utils.run_command(cmd_create_env, env=None,
                                                       shell=True)
         if errno:
-            raise Exception("Environment setup failed (STDERR: {}"
+            raise Exception("Environment setup failed (STDERR: {})"
                             .format(stderr))
 
     def exit_on_exception(self):
@@ -289,6 +289,7 @@ class CreateEnvConda(CreateEnvBase):
             self.install_packages_from_index()
         except Exception:
             self.exit_on_exception()
+            raise
 
 
 class CreateEnvVirtualenv(CreateEnvBase):
@@ -372,8 +373,8 @@ class CreateEnvVirtualenv(CreateEnvBase):
             self.install_packages_from_index(env=current_env)
             self.install_packages_from_source(env=current_env)
         except Exception:
-            raise
             self.exit_on_exception()
+            raise
 
 
 def get_env_creator(manager):
