@@ -3,6 +3,7 @@
 
 import sys
 import shutil
+import re
 if sys.version_info >= (3, 0):
     import pathlib as pathlib
 else:
@@ -94,18 +95,45 @@ def delete(name):
     """
     print("Delete")
 
+#
+# using activate / deactivate we communicate with the calling shell by
+# printing the commands to stdout, i.e we need to disable all unwanted
+# messages to not confuse the shell
+#
+@main.command(hidden=True, add_help_option=False)
+@click.argument('args', nargs=-1)
+@click.option('--profile', 'profile', default='default_profile',
+              show_default=True,
+              help="AiiDA profile to load for the project environment.")
+@click.option('--help', '_help', is_flag=True,
+              help="Show this message and exit.")
+@click.pass_context
+def activate(ctx, args, _help, profile):
+    """
+    Activate an AiiDA project environment.
+    """
+    # we expect two arguments: shell-type and environment name
+    if _help or len(args) != 2:
+        help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "env_name")
+        print("echo \"{}\"".format(help_txt))
+    else:
+        print("echo This will be sourced")
+        print("export AIIDA_PATH=/home/andreas/.aiida")
 
-@main.command(hidden=True)
-@click.argument('shell_type', type=str)
-@click.argument('env_name', type=str)
-def activate(shell_type, env_name):
-    """Call activator and return activation commands to caller."""
-    print("Activating {} using {} shell".format(env_name, shell_type))
 
-
-@main.command(hidden=True)
-@click.argument('shell_type', type=str)
-@click.argument('env_name', type=str)
-def deactivate(shell_type, env_name):
-    """Call deactivator and return deactivation commands to caller."""
-    print("Deactivating {} using {} shell".format(env_name, shell_type))
+@main.command(hidden=True, add_help_option=False)
+@click.argument('args', nargs=-1)
+@click.option('--help', '_help', is_flag=True,
+              help=("Show this message and exit."))
+@click.pass_context
+def deactivate(ctx, args, _help):
+    """
+    Deactivate a loaded AiiDA project environment.
+    """
+    # we expect one argument: shell-type and environment name
+    if _help or len(args) != 1:
+        help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "env_name")
+        print("echo \"{}\"".format(help_txt))
+    else:
+        print("echo This will be sourced")
+        print("unset AIIDA_PATH")
