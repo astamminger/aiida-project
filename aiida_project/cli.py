@@ -81,14 +81,14 @@ def create(name, manager, aiida_core, python_version, packages, path):
 
 @main.command()
 @click.argument('name', type=str)
-def delete(name):
+def remove(name):
     """
-    Delete an existing AiiDA project environment.
+    Remove an existing AiiDA project environment.
 
-    Removes the AiiDA project environment with given NAME from the
-    list of managed environments and deletes the environment folder.
+    Deletes the environment folder and removes the AiiDA project from
+    the list of managed environments.
 
-    Note:
+    Warning:
 
     This action will **permanently** delete all data contained in the
     project folder including databases, repositories and configs.
