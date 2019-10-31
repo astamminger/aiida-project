@@ -43,7 +43,7 @@ def main():
                     "directory)"))
 def create(name, manager, aiida_core, python_version, packages, path):
     """
-    Create a new AiiDA project environment named NAME.
+    Create a new AiiDA project environment.
 
     Initializes a new folder named NAME containing an `.aiida` folder at the
     location given by path and creates a new python environment running
@@ -76,3 +76,36 @@ def create(name, manager, aiida_core, python_version, packages, path):
                          python_version=python_version,
                          aiida_version=aiida_core, packages=list(packages))
     creator.create_aiida_project_environment()
+
+
+@main.command()
+@click.argument('name', type=str)
+def delete(name):
+    """
+    Delete an existing AiiDA project environment.
+
+    Removes the AiiDA project environment with given NAME from the
+    list of managed environments and deletes the environment folder.
+
+    Note:
+
+    This action will **permanently** delete all data contained in the
+    project folder including databases, repositories and configs.
+    """
+    print("Delete")
+
+
+@main.command(hidden=True)
+@click.argument('shell_type', type=str)
+@click.argument('env_name', type=str)
+def activate(shell_type, env_name):
+    """Call activator and return activation commands to caller."""
+    print("Activating {} using {} shell".format(env_name, shell_type))
+
+
+@main.command(hidden=True)
+@click.argument('shell_type', type=str)
+@click.argument('env_name', type=str)
+def deactivate(shell_type, env_name):
+    """Call deactivator and return deactivation commands to caller."""
+    print("Deactivating {} using {} shell".format(env_name, shell_type))
