@@ -104,5 +104,15 @@ def fake_popen(monkeypatch):
 
 
 @pytest.fixture
+def temporary_home(monkeypatch, temporary_folder):
+    def override_home(cls):
+        return pathlib.Path(temporary_folder)
+    monkeypatch.setattr('pathlib.Path.home', classmethod(override_home))
+    # assert that the monkeypatch is really working so that we do not
+    # accidentially write somewhere else
+    assert pathlib.Path.home() == temporary_folder
+
+
+@pytest.fixture
 def click_cli_runner():
     yield CliRunner()
