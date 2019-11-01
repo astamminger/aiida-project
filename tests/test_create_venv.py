@@ -19,15 +19,26 @@ def test_python_version(valid_env_input):
 
 def test_aiida_version(valid_env_input):
     """Test aiida package definition is correct."""
-    # test for index package
+    # index package
     valid_env_input['aiida_version'] = "1.2.3b56"
     env_creator = CreateEnvVirtualenv(**valid_env_input)
     wanted_format = "aiida-core==1.2.3b56"
     assert wanted_format in env_creator.pkg_arguments
-    # test again for source package
+    # index package with extras
+    valid_env_input['aiida_version'] = "1.2.3b56[extras]"
+    env_creator = CreateEnvVirtualenv(**valid_env_input)
+    wanted_format = "aiida-core==1.2.3b56[extras]"
+    assert wanted_format in env_creator.pkg_arguments
+    # source package
     valid_env_input['aiida_version'] = 'aiidateam/aiida-core:develop'
     env_creator = CreateEnvVirtualenv(**valid_env_input)
     wanted_format = "aiidateam/aiida-core:develop"
+    assert wanted_format in env_creator.pkg_arguments
+    # source package with extrs
+    valid_env_input['aiida_version'] = 'aiidateam/aiida-core:develop[extra]'
+    env_creator = CreateEnvVirtualenv(**valid_env_input)
+    print(env_creator.__dict__)
+    wanted_format = "aiidateam/aiida-core:develop[extra]"
     assert wanted_format in env_creator.pkg_arguments
 
 
