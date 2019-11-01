@@ -18,7 +18,7 @@ AIIDA_SUBFOLDER = ".aiida"
 
 # configuration file
 CONFIG_FOLDER = ".aiida_project"
-PROJECTS_FILE = ".projects"
+PROJECTS_FILE = ".projects.yaml"
 
 # compatible shells
 if ON_WIN:
