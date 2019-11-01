@@ -185,6 +185,7 @@ class CreateEnvBase(object):
             'python': python_version,
             'env_sub': env_subfolder,
             'src_sub': src_subfolder,
+            'manager': self.__class__.__name__,
         }
         return project_spec
 
@@ -315,7 +316,7 @@ class CreateEnvConda(CreateEnvBase):
     def create_spec_entry(self):
         args = [self.proj_name, self.proj_path, self._aiida_version,
                 self._python_version, self.env_subfolder, self.src_subfolder]
-        project_spec = self.get_project_spec(self, *args)
+        project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
 
     def create_aiida_project_environment(self):
@@ -369,9 +370,6 @@ class CreateEnvVirtualenv(CreateEnvBase):
         # check if required commands are missing
         self.check_required_commands()
 
-        # build project specification
-        self.proj_spec = self.project_specs(aiida_version, python_version)
-
     def check_required_commands(self):
         """Check required commands are available on the system."""
         # always check for `virtualenv` manager
@@ -396,21 +394,23 @@ class CreateEnvVirtualenv(CreateEnvBase):
         # otherwise: check if version is OK an build the package definition
         # understood by PiP
         else:
-            if utils.assert_valid_aiida_version(aiida_version):
-                return "aiida-core=={}".format(aiida_version)
+            # unpack will also unpack defs of type 1.4.4[extras]
+            version, extras = utils.unpack_raw_package_input(aiida_version)
+            if utils.assert_valid_aiida_version(version):
+                return "aiida-core=={}{}".format(version, extras)
             else:
                 raise Exception("Defined AiiDA version '{}' is malformed!"
                                 .format(aiida_version))
 
     def create_spec_entry(self):
         aiida_pkg_def = self._aiida_version
-        if utils.asser_package_is_source(aiida_pkg_def):
+        if utils.assert_package_is_source(aiida_pkg_def):
             aiida_version, _ = utils.unpack_raw_package_input(aiida_pkg_def)
         else:
             aiida_version = aiida_pkg_def
         args = [self.proj_name, self.proj_path, aiida_version,
                 self._python_version, self.env_subfolder, self.src_subfolder]
-        project_spec = self.get_project_spec(self, *args)
+        project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
 
     def create_aiida_project_environment(self):
