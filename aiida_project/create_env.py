@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Check if we can actually specify extras for aiida if we do not
+#       select an installation from source using virtualenv
+
 from __future__ import print_function
 
 import sys
@@ -13,8 +16,10 @@ else:
 
 import click
 import click_spinner
+import yaml
 
 from aiida_project import utils
+from aiida_project import constants
 
 
 """
@@ -28,9 +33,9 @@ class CreateEnvBase(object):
     # define environment name and locations
     proj_name = None
     proj_path = None
-    src_subfolder = 'src'
-    env_subfolder = 'env'
-    aiida_subfolder = '.aiida'
+    src_subfolder = constants.DEFAULT_SRC_SUBFOLDER
+    env_subfolder = constants.DEFAULT_ENV_SUBFOLDER
+    aiida_subfolder = constants.AIIDA_SUBFOLDER
 
     # define the command for creating an environment
     env_executable = None
@@ -170,6 +175,19 @@ class CreateEnvBase(object):
             raise Exception("Environment setup failed (STDERR: {})"
                             .format(stderr))
 
+    def get_project_spec(self, proj_name, proj_path, aiida_version,
+                         python_version, env_subfolder, src_subfolder):
+        """Create dictionary containing the project specifications."""
+        project_spec = {
+            'project_name': proj_name,
+            'project_path': str(proj_path.absolute()),
+            'aiida': aiida_version,
+            'python': python_version,
+            'env_sub': env_subfolder,
+            'src_sub': src_subfolder,
+        }
+        return project_spec
+
     def exit_on_exception(self):
         """Cleanup if environment creation fails."""
         shutil.rmtree(str(self.proj_folder.absolute()))
@@ -216,9 +234,9 @@ class CreateEnvConda(CreateEnvBase):
         # setup internal variables
         self.proj_name = proj_name
         self.proj_path = proj_path
-        self.src_subfolder = "src"
-        self.env_subfolder = "env"
-        self.aiida_subfolder = ".aiida"
+        self.src_subfolder = constants.DEFAULT_SRC_SUBFOLDER
+        self.env_subfolder = constants.DEFAULT_ENV_SUBFOLDER
+        self.aiida_subfolder = constants.AIIDA_SUBFOLDER
 
         # environment
         prefix = self.env_folder / self.proj_name
@@ -245,11 +263,18 @@ class CreateEnvConda(CreateEnvBase):
         packages_all = list([aiida_core_package] + packages)
         self.pkg_arguments = packages_all
 
+        # save some vars for crearing the projec spec later
+        self._aiida_version = aiida_version
+        self._python_version = python_version
+
         # check if required commands are missing
         self.check_required_commands()
 
         # run check hook to verify inputs
         self.verify_inputs()
+
+        # check project name is not in use
+        self.check_name_is_avail()
 
     def check_required_commands(self):
         """Check required commands are available on the system."""
@@ -259,6 +284,12 @@ class CreateEnvConda(CreateEnvBase):
         if not conda_avail:
             raise Exception("Unable to find the `conda` executable on the "
                             "system. Is anaconda on the PATH?")
+
+    def check_name_is_avail(self):
+        """Check if chosen project name is available."""
+        if utils.project_name_exists(self.proj_name):
+            raise Exception("Project name `{}` already in use."
+                            .format(self.proj_name))
 
     def create_aiida_package_entry(self, aiida_version):
         """Create the package entry for aiida-core installation."""
@@ -281,6 +312,12 @@ class CreateEnvConda(CreateEnvBase):
             raise Exception("Installation of extras only possible for "
                             "`virtualenv` manager")
 
+    def create_spec_entry(self):
+        args = [self.proj_name, self.proj_path, self._aiida_version,
+                self._python_version, self.env_subfolder, self.src_subfolder]
+        project_spec = self.get_project_spec(self, *args)
+        utils.save_project_spec(project_spec)
+
     def create_aiida_project_environment(self):
         """Create the folder structure and initialize the environment."""
         try:
@@ -290,6 +327,7 @@ class CreateEnvConda(CreateEnvBase):
         except Exception:
             self.exit_on_exception()
             raise
+        self.create_spec_entry()
 
 
 class CreateEnvVirtualenv(CreateEnvBase):
@@ -301,9 +339,9 @@ class CreateEnvVirtualenv(CreateEnvBase):
         # setup internal variables
         self.proj_name = proj_name
         self.proj_path = proj_path
-        self.src_subfolder = "src"
-        self.env_subfolder = "env"
-        self.aiida_subfolder = ".aiida"
+        self.src_subfolder = constants.DEFAULT_SRC_SUBFOLDER
+        self.env_subfolder = constants.DEFAULT_ENV_SUBFOLDER
+        self.aiida_subfolder = constants.AIIDA_SUBFOLDER
 
         # environment
         prefix = self.env_folder / self.proj_name
@@ -324,8 +362,15 @@ class CreateEnvVirtualenv(CreateEnvBase):
         packages_all = list([aiida_core_package] + packages)
         self.pkg_arguments = packages_all
 
+        # store some additional vars for project spec
+        self._aiida_version = aiida_version
+        self._python_version = python_version
+
         # check if required commands are missing
         self.check_required_commands()
+
+        # build project specification
+        self.proj_spec = self.project_specs(aiida_version, python_version)
 
     def check_required_commands(self):
         """Check required commands are available on the system."""
@@ -357,6 +402,17 @@ class CreateEnvVirtualenv(CreateEnvBase):
                 raise Exception("Defined AiiDA version '{}' is malformed!"
                                 .format(aiida_version))
 
+    def create_spec_entry(self):
+        aiida_pkg_def = self._aiida_version
+        if utils.asser_package_is_source(aiida_pkg_def):
+            aiida_version, _ = utils.unpack_raw_package_input(aiida_pkg_def)
+        else:
+            aiida_version = aiida_pkg_def
+        args = [self.proj_name, self.proj_path, aiida_version,
+                self._python_version, self.env_subfolder, self.src_subfolder]
+        project_spec = self.get_project_spec(self, *args)
+        utils.save_project_spec(project_spec)
+
     def create_aiida_project_environment(self):
         """Create the folder structure and initialize the environment."""
         # mock the virtualenv activation procedure
@@ -375,6 +431,7 @@ class CreateEnvVirtualenv(CreateEnvBase):
         except Exception:
             self.exit_on_exception()
             raise
+        self.create_spec_entry()
 
 
 def get_env_creator(manager):
