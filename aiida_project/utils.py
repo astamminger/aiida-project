@@ -3,9 +3,17 @@
 from __future__ import print_function
 
 import re
+import sys
 import subprocess
+if sys.version_info >= (3, 0):
+    import pathlib as pathlib
+else:
+    import pathlib2 as pathlib
 
 import click_spinner
+import yaml
+
+from aiida_project import constants
 
 
 def clone_git_repo_to_disk(github_url, location, branch=None):
@@ -147,8 +155,34 @@ def check_command_avail(command, test_version=True):
         return True
 
 
-def with_spinner(func):
-    def wrapper(*args, **kwargs):
-        with click_spinner.spinner():
-            func(*args, **kwargs)
-    return wrapper
+def load_project_spec():
+    """Load config specs from .projects file."""
+    home = pathlib.Path().home()
+    config_folder = home / constants.CONFIG_FOLDER
+    projects_file = str(config_folder / constants.PROJECTS_FILE)
+    try:
+        with open(projects_file, 'r') as f:
+            project_specs = yaml.load(f)
+    except FileNotFoundError:
+        project_specs = {}
+    return project_specs
+
+
+def save_project_spec(project_spec):
+    """Save project specfication to .projects file."""
+    home = pathlib.Path().home()
+    config_folder = home / constants.CONFIG_FOLDER
+    if not config_folder.exist():
+        config_folder.mkdir()
+    projects_file = str(config_folder / constants.PROJECTS_FILE)
+    project_specs = load_project_spec()
+    project_name = project_spec.pop('project_name')
+    project_specs.update({project_name: project_spec})
+    with open(projects_file, 'w') as f:
+        yaml.dump(project_specs, f)
+
+
+def project_name_exists(project_name):
+    """Check if the project name is already in use."""
+    project_names = load_project_spec().keys()
+    return project_name in project_names
