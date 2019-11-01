@@ -162,7 +162,7 @@ def load_project_spec():
     projects_file = str(config_folder / constants.PROJECTS_FILE)
     try:
         with open(projects_file, 'r') as f:
-            project_specs = yaml.load(f)
+            project_specs = yaml.safe_load(f)
     except FileNotFoundError:
         project_specs = {}
     return project_specs
@@ -172,14 +172,14 @@ def save_project_spec(project_spec):
     """Save project specfication to .projects file."""
     home = pathlib.Path().home()
     config_folder = home / constants.CONFIG_FOLDER
-    if not config_folder.exist():
+    if not config_folder.exists():
         config_folder.mkdir()
     projects_file = str(config_folder / constants.PROJECTS_FILE)
     project_specs = load_project_spec()
     project_name = project_spec.pop('project_name')
     project_specs.update({project_name: project_spec})
     with open(projects_file, 'w') as f:
-        yaml.dump(project_specs, f)
+        yaml.dump(project_specs, f, default_flow_style=False)
 
 
 def project_name_exists(project_name):
