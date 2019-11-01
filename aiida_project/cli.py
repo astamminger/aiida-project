@@ -119,6 +119,7 @@ def activate(ctx, args, _help, profile):
     else:
         print("echo This will be sourced")
         print("export AIIDA_PATH=/home/andreas/.aiida")
+        print("conda activate aiida-project-manager")
 
 
 @main.command(hidden=True, add_help_option=False)
@@ -136,4 +137,5 @@ def deactivate(ctx, args, _help):
         print("echo \"{}\"".format(help_txt))
     else:
         print("echo This will be sourced")
+        print("conda deactivate")
         print("unset AIIDA_PATH")
