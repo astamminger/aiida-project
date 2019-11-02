@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import string
 import random
+if sys.version_info >= (3, 0):
+    import pathlib as pathlib
+else:
+    import pathlib2 as pathlib
 
 import pytest
+
 from aiida_project import utils
+from aiida_project import constants
 
 
 def test_unpack_package_def():
@@ -194,3 +201,72 @@ def test_clone_git_repo_to_disk(fake_popen):
     wanted_cmd = ("git clone --single-branch --branch {} {} {}"
                   .format(branch, github_url, location_on_disk))
     assert wanted_cmd == generated_cmd
+
+
+def test_save_and_load_project_spec(temporary_home):
+    """Test that the project spec is written and loaded correctly."""
+    project_name_a = 'testproject_a'
+    project_spec_a = {
+        'project_name': project_name_a,
+        'project_path': '/this/is/some/random/path',
+        'aiida': '12.2323.23982',
+        'python': '28932.28392',
+        'env_sub': 'the_env_subfolder',
+        'src_sub': 'the_src_subfolder',
+        'manager': 'manager_name',
+    }
+    project_name_b = 'testproject_b'
+    project_spec_b = {
+        'project_name': project_name_b,
+        'project_path': '/this/is/some/random/path',
+        'aiida': '12.2323.23982',
+        'python': '28932.28392',
+        'env_sub': 'the_env_subfolder',
+        'src_sub': 'the_src_subfolder',
+        'manager': 'manager_name',
+    }
+    path_to_config = (pathlib.Path.home() / constants.CONFIG_FOLDER
+                      / constants.PROJECTS_FILE)
+    # check that there is no file already
+    assert path_to_config.exists() is False
+    # write specs to file
+    utils.save_project_spec(project_spec_a)
+    assert path_to_config.exists() is True
+    # load specs from file
+    loaded_spec_a = utils.load_project_spec()
+    assert project_name_a in loaded_spec_a.keys()
+    # save_project_spec has already popped the 'project_name' key so we
+    # can compare the contents immediately
+    assert loaded_spec_a[project_name_a] == project_spec_a
+    # write the second spec to the file
+    utils.save_project_spec(project_spec_b)
+    # and load it back
+    loaded_spec_b = utils.load_project_spec()
+    assert project_name_a in loaded_spec_b.keys()
+    assert project_name_b in loaded_spec_b.keys()
+    # save_project_spec has already popped the 'project_name' key so we
+    # can compare the contents immediately
+    assert loaded_spec_b[project_name_a] == project_spec_a
+    assert loaded_spec_b[project_name_b] == project_spec_b
+
+
+def test_project_name_exists(temporary_home):
+    """Test the function checking for duplicate project names."""
+    project_name = 'test_project'
+    project_spec = {
+        'project_name': project_name,
+        'project_path': '',
+        'aiida': '',
+        'python': '',
+        'env_sub': '',
+        'src_sub': '',
+        'manager': '',
+    }
+    # save and check that the project is there
+    utils.save_project_spec(project_spec)
+    loaded_contents = utils.load_project_spec()
+    assert project_name in loaded_contents.keys()
+    result = utils.project_name_exists('test_project')
+    assert result is True
+    result = utils.project_name_exists('test_project_new')
+    assert result is False
