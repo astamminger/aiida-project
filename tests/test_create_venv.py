@@ -7,6 +7,8 @@ else:
     import pathlib2 as pathlib
 
 from aiida_project.create_env import CreateEnvVirtualenv
+from aiida_project import constants
+from aiida_project import utils
 
 
 def test_python_version(valid_env_input):
@@ -77,6 +79,19 @@ def test_create_project_environment_success(temporary_folder, temporary_home,
     # compare expected cmd order with actual cmd order send to Popen
     actual_cmd_order = [_ for (_,) in fake_popen.args]
     assert actual_cmd_order == expected_cmd_order
+    # test the written project specs
+    path_to_config = (pathlib.Path.home() / constants.CONFIG_FOLDER
+                      / constants.PROJECTS_FILE)
+    assert path_to_config.exists() is True
+    loaded_specs = utils.load_project_spec()
+    assert 'venv_project' in loaded_specs.keys()
+    contents = loaded_specs['venv_project']
+    assert contents['project_path'] == str(pathlib.Path(temporary_folder))
+    assert contents['aiida'] == '0.0.0'
+    assert contents['python'] == '0.0'
+    assert contents['env_sub'] == constants.DEFAULT_ENV_SUBFOLDER
+    assert contents['src_sub'] == constants.DEFAULT_SRC_SUBFOLDER
+    assert contents['manager'] == CreateEnvVirtualenv.__name__
 
 
 def test_create_project_environment_failure(temporary_folder, temporary_home,
@@ -101,3 +116,7 @@ def test_create_project_environment_failure(temporary_folder, temporary_home,
     expected_exception_msg = "Environment setup failed (STDERR: Venv)"
     assert expected_exception_msg == str(exception.value)
     assert creator.proj_folder.exists() is False
+    # check that nothing is written to the projects file
+    path_to_config = (pathlib.Path.home() / constants.CONFIG_FOLDER
+                      / constants.PROJECTS_FILE)
+    assert path_to_config.exists() is False

@@ -121,19 +121,7 @@ def test_create_project_environment_failure(temporary_folder, temporary_home,
     expected_exception_msg = "Environment setup failed (STDERR: Conda)"
     assert expected_exception_msg == str(exception.value)
     assert creator.proj_folder.exists() is False
-
-
-def test_process_spec_for_conda(temporary_home, temporary_folder):
-    """Test get_process_spec() function when used with conda."""
-    inputs = {
-        'proj_name': 'test_project',
-        'proj_path': temporary_folder,
-        'python_version': '89.3728',
-        'aiida_version': '172812.10291.20192',
-        'packages': [],
-    }
-    # TODO: Write tests for project specs
-#    env_creator = CreateEnvConda(**inputs)
-#    creator.create_aiida_project_environment
-#    print(temporary_folder)
-#    print(pathlib.Path.home())
+    # check that nothing is written to the projects file
+    path_to_config = (pathlib.Path.home() / constants.CONFIG_FOLDER
+                      / constants.PROJECTS_FILE)
+    assert path_to_config.exists() is False
