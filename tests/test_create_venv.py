@@ -42,8 +42,11 @@ def test_aiida_version(valid_env_input):
     assert wanted_format in env_creator.pkg_arguments
 
 
-def test_create_project_environment_success(temporary_folder, fake_popen):
+def test_create_project_environment_success(temporary_folder, temporary_home,
+                                            fake_popen):
     """Test full cycle for creating an environment from conda."""
+    # make sure we write to the correct directory
+    assert pathlib.Path.home() == temporary_folder
     arguments = {
         'proj_name': 'venv_project',
         'proj_path': pathlib.Path(temporary_folder),
@@ -76,8 +79,11 @@ def test_create_project_environment_success(temporary_folder, fake_popen):
     assert actual_cmd_order == expected_cmd_order
 
 
-def test_create_project_environment_failure(temporary_folder, fake_popen):
+def test_create_project_environment_failure(temporary_folder, temporary_home,
+                                            fake_popen):
     """Test full cycle for creating an environment from conda."""
+    # make sure we write to the correct directory
+    assert pathlib.Path.home() == temporary_folder
     arguments = {
         'proj_name': 'venv_project',
         'proj_path': pathlib.Path(temporary_folder),

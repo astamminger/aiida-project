@@ -44,7 +44,7 @@ def test_has_source():
     assert base.has_source() is False
 
 
-def test_create_folder_structure(capsys, temporary_folder):
+def test_create_folder_structure(temporary_folder):
     """Test project folder structure generation."""
     base = CreateEnvBase()
     base.proj_path = pathlib.Path(temporary_folder)

@@ -7,6 +7,7 @@ else:
     import pathlib2 as pathlib
 
 from aiida_project.create_env import CreateEnvConda
+from aiida_project import constants
 
 
 def test_python_version(valid_env_input):
@@ -55,8 +56,11 @@ def test_defined_extra_raises(valid_env_input):
     assert "Installation of extras" in str(exception.value)
 
 
-def test_create_project_environment_success(temporary_folder, fake_popen):
+def test_create_project_environment_success(temporary_folder, temporary_home,
+                                            fake_popen):
     """Test full cycle for creating an environment from conda."""
+    # make sure we write to the correct directory
+    assert pathlib.Path.home() == temporary_folder
     arguments = {
         'proj_name': 'conda_project',
         'proj_path': pathlib.Path(temporary_folder),
@@ -80,8 +84,11 @@ def test_create_project_environment_success(temporary_folder, fake_popen):
     assert actual_cmd_order == expected_cmd_order
 
 
-def test_create_project_environment_failure(temporary_folder, fake_popen):
+def test_create_project_environment_failure(temporary_folder, temporary_home,
+                                            fake_popen):
     """Test that exit_on_exception() is called on failed creation."""
+    # make sure we write to the correct directory
+    assert pathlib.Path.home() == temporary_folder
     arguments = {
         'proj_name': 'conda_project',
         'proj_path': pathlib.Path(temporary_folder),
@@ -100,3 +107,19 @@ def test_create_project_environment_failure(temporary_folder, fake_popen):
     expected_exception_msg = "Environment setup failed (STDERR: Conda)"
     assert expected_exception_msg == str(exception.value)
     assert creator.proj_folder.exists() is False
+
+
+def test_process_spec_for_conda(temporary_home, temporary_folder):
+    """Test get_process_spec() function when used with conda."""
+    inputs = {
+        'proj_name': 'test_project',
+        'proj_path': temporary_folder,
+        'python_version': '89.3728',
+        'aiida_version': '172812.10291.20192',
+        'packages': [],
+    }
+    # TODO: Write tests for project specs
+#    env_creator = CreateEnvConda(**inputs)
+#    creator.create_aiida_project_environment
+#    print(temporary_folder)
+#    print(pathlib.Path.home())
