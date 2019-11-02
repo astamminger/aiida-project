@@ -7,6 +7,7 @@ else:
     import pathlib2 as pathlib
 
 from aiida_project.create_env import CreateEnvConda
+from aiida_project import utils
 from aiida_project import constants
 
 
@@ -82,6 +83,19 @@ def test_create_project_environment_success(temporary_folder, temporary_home,
     # compare expected cmd order with actual cmd order send to Popen
     actual_cmd_order = [_ for (_,) in fake_popen.args]
     assert actual_cmd_order == expected_cmd_order
+    # test the written project specs
+    path_to_config = (pathlib.Path.home() / constants.CONFIG_FOLDER
+                      / constants.PROJECTS_FILE)
+    assert path_to_config.exists() is True
+    loaded_specs = utils.load_project_spec()
+    assert 'conda_project' in loaded_specs.keys()
+    contents = loaded_specs['conda_project']
+    assert contents['project_path'] == str(pathlib.Path(temporary_folder))
+    assert contents['aiida'] == '0.0.0'
+    assert contents['python'] == '0.0'
+    assert contents['env_sub'] == constants.DEFAULT_ENV_SUBFOLDER
+    assert contents['src_sub'] == constants.DEFAULT_SRC_SUBFOLDER
+    assert contents['manager'] == CreateEnvConda.__name__
 
 
 def test_create_project_environment_failure(temporary_folder, temporary_home,
