@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# TODO: Check if we can actually specify extras for aiida if we do not
-#       select an installation from source using virtualenv
 
 from __future__ import print_function
 
@@ -409,7 +407,7 @@ class CreateEnvVirtualenv(CreateEnvBase):
         else:
             aiida_version = aiida_pkg_def
         args = [self.proj_name, self.proj_path, aiida_version,
-                self._python_version, self.env_subfolder, self.src_subfolder]
+                self._python_version, self.env_folder, self.src_folder]
         project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
 
@@ -436,8 +434,8 @@ class CreateEnvVirtualenv(CreateEnvBase):
 
 def get_env_creator(manager):
     creator_map = {
-        'conda': CreateEnvConda,
-        'virtualenv': CreateEnvVirtualenv,
+        constants.MANAGER_NAME_CONDA: CreateEnvConda,
+        constants.MANAGER_NAME_VENV: CreateEnvVirtualenv,
     }
     try:
         return creator_map[manager]
