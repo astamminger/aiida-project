@@ -13,29 +13,6 @@ from click.testing import CliRunner
 from aiida_project.create_env import CreateEnvBase
 
 
-# skip certain tests for current platform
-def pytest_runtest_setup(item):
-    all_platforms = set("darwin linux win32".split())
-    item_markers = [mark.name for mark in item.iter_markers()]
-    supported_platforms = all_platforms.intersection(item_markers)
-    current_platform = sys.platform
-    if supported_platforms and current_platform not in supported_platforms:
-        pytest.skip("skipping")
-
-
-# register custom markers
-def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "linux: Mark test for execution only on linux platforms"
-    )
-    config.addinivalue_line(
-        "markers", "win32: Mark test for execution only on windows platforms"
-    )
-    config.addinivalue_line(
-        "markers", "darwin: Mark test for execution only on macos platforms"
-    )
-
-
 @pytest.fixture
 def temporary_folder():
     tmp = tempfile.mkdtemp()
