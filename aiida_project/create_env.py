@@ -173,17 +173,17 @@ class CreateEnvBase(object):
             raise Exception("Environment setup failed (STDERR: {})"
                             .format(stderr))
 
-    def get_project_spec(self, proj_name, proj_path, aiida_version,
-                         python_version, env_subfolder, src_subfolder):
+    def get_project_spec(self, proj_name, proj_path, manager, aiida_version,
+                         python_version, env_folder, src_folder):
         """Create dictionary containing the project specifications."""
         project_spec = {
             'project_name': proj_name,
             'project_path': str(proj_path.absolute()),
             'aiida': aiida_version,
             'python': python_version,
-            'env_sub': env_subfolder,
-            'src_sub': src_subfolder,
-            'manager': self.__class__.__name__,
+            'env_sub': env_folder,
+            'src_sub': src_folder,
+            'manager': manager,
         }
         return project_spec
 
@@ -312,8 +312,15 @@ class CreateEnvConda(CreateEnvBase):
                             "`virtualenv` manager")
 
     def create_spec_entry(self):
-        args = [self.proj_name, self.proj_path, self._aiida_version,
-                self._python_version, self.env_subfolder, self.src_subfolder]
+        args = [
+            self.proj_name,
+            self.proj_path,
+            constants.MANAGER_NAME_CONDA,
+            self._aiida_version,
+            self._python_version,
+            self.env_folder,
+            self.src_folder,
+        ]
         project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
 
@@ -406,8 +413,15 @@ class CreateEnvVirtualenv(CreateEnvBase):
             aiida_version, _ = utils.unpack_raw_package_input(aiida_pkg_def)
         else:
             aiida_version = aiida_pkg_def
-        args = [self.proj_name, self.proj_path, aiida_version,
-                self._python_version, self.env_folder, self.src_folder]
+        args = [
+            self.proj_name,
+            self.proj_path,
+            constants.MANAGER_NAME_VENV,
+            self._aiida_version,
+            self._python_version,
+            self.env_folder,
+            self.src_folder,
+        ]
         project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
 
