@@ -177,13 +177,13 @@ class CreateEnvBase(object):
                          python_version, env_folder, src_folder):
         """Create dictionary containing the project specifications."""
         project_spec = {
-            'project_name': proj_name,
+            'project_name': str(proj_name),
             'project_path': str(proj_path.absolute()),
-            'aiida': aiida_version,
-            'python': python_version,
-            'env_sub': env_folder,
-            'src_sub': src_folder,
-            'manager': manager,
+            'aiida': str(aiida_version),
+            'python': str(python_version),
+            'env_sub': str(env_folder),
+            'src_sub': str(src_folder),
+            'manager': str(manager),
         }
         return project_spec
 
@@ -314,12 +314,12 @@ class CreateEnvConda(CreateEnvBase):
     def create_spec_entry(self):
         args = [
             self.proj_name,
-            self.proj_path,
+            self.proj_path.absolute(),
             constants.MANAGER_NAME_CONDA,
             self._aiida_version,
             self._python_version,
-            self.env_folder,
-            self.src_folder,
+            self.env_folder.absolute(),
+            self.src_folder.absolute(),
         ]
         project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
@@ -415,12 +415,12 @@ class CreateEnvVirtualenv(CreateEnvBase):
             aiida_version = aiida_pkg_def
         args = [
             self.proj_name,
-            self.proj_path,
+            self.proj_path.absolute(),
             constants.MANAGER_NAME_VENV,
             self._aiida_version,
             self._python_version,
-            self.env_folder,
-            self.src_folder,
+            self.env_folder.absolute(),
+            self.src_folder.absolute(),
         ]
         project_spec = self.get_project_spec(*args)
         utils.save_project_spec(project_spec)
