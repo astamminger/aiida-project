@@ -29,3 +29,7 @@ else:
     COMPATIBLE_SHELLS = [
         'bash',
     ]
+
+# define internal names for package managers
+MANAGER_NAME_CONDA = 'conda'
+MANAGER_NAME_VENV = 'virtualenv'
