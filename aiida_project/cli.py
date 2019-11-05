@@ -131,7 +131,7 @@ def deactivate(ctx, args, _help):
     """
     Deactivate a loaded AiiDA project environment.
     """
-    # we expect one argument: shell-type and environment name
+    # we expect only one argument the shell-type
     if _help or len(args) != 1:
         help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "env_name")
         print("echo \"{}\"".format(help_txt))
