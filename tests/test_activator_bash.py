@@ -42,12 +42,12 @@ def test_conda_activation(project_spec_file, fake_popen):
     with pytest.raises(Exception) as exception:
         bash = ActivateEnvBash('conda', 'conda_project')
     assert "conda does not seem to be available" in str(exception.value)
+    # reset environment
+    os.environ['AIIDA_PROJECT_ACTIVE'] = ''
 
 
 def test_venv_activation(project_spec_file, fake_popen):
     """Test environment activation for conda environment manager."""
-    # reset environment
-    os.environ['AIIDA_PROJECT_ACTIVE'] = ''
     # physically setup all folders and initialize activator class
     base_path = project_spec_file['virtualenv_project']['project_path']
     env_path = project_spec_file['virtualenv_project']['env_sub']
@@ -80,3 +80,5 @@ def test_venv_activation(project_spec_file, fake_popen):
     with pytest.raises(Exception) as exception:
         bash = ActivateEnvBash('virtualenv', 'virtualenv_project')
     assert "No activation script found at location" in str(exception.value)
+    # reset environment
+    os.environ['AIIDA_PROJECT_ACTIVE'] = ''

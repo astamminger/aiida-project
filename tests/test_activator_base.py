@@ -29,6 +29,7 @@ def test_correct_aiida_path(project_spec_file):
     base = ActivateEnvBase()
     project_spec_venv = base.load_project_spec('virtualenv_project')
     # this should raise because the folder does not exists
+    aiida_path = pathlib.Path.home() / 'virtualenv_project'
     aiida_venv = pathlib.Path.home() / 'virtualenv_project' / AIIDA_SUBFOLDER
     with pytest.raises(Exception) as exception:
         aiida_folder = base.get_aiida_path_from_spec(project_spec_venv)
@@ -36,7 +37,7 @@ def test_correct_aiida_path(project_spec_file):
     # and this should succeed
     aiida_venv.mkdir(parents=True)
     loaded_aiida_path = base.get_aiida_path_from_spec(project_spec_venv)
-    assert loaded_aiida_path == aiida_venv.absolute()
+    assert loaded_aiida_path == aiida_path.absolute()
 
 
 def test_validate_activatable():
@@ -54,3 +55,6 @@ def test_validate_activatable():
     with pytest.raises(Exception) as exception:
         base.validate_activatable()
     assert "AIIDA_PATH is already set" in str(exception.value)
+    # reset environment
+    os.environ['AIIDA_PROJECT_ACTIVE'] = ''
+    os.environ['AIIDA_PATH'] = ''
