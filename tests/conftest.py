@@ -115,6 +115,7 @@ def project_spec_file(temporary_home):
     }
     utils.save_project_spec(venv_env)
     utils.save_project_spec(conda_env)
+    yield utils.load_project_spec()
 
 
 @pytest.fixture
