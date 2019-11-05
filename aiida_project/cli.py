@@ -102,13 +102,10 @@ def remove(name):
 #
 @main.command(hidden=True, add_help_option=False)
 @click.argument('args', nargs=-1)
-@click.option('--profile', 'profile', default='default_profile',
-              show_default=True,
-              help="AiiDA profile to load for the project environment.")
 @click.option('--help', '_help', is_flag=True,
               help="Show this message and exit.")
 @click.pass_context
-def activate(ctx, args, _help, profile):
+def activate(ctx, args, _help):
     """
     Activate an AiiDA project environment.
     """
