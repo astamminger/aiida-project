@@ -10,6 +10,8 @@ else:
 import pytest
 from click.testing import CliRunner
 
+from aiida_project import utils
+from aiida_project import constants
 from aiida_project.create_env import CreateEnvBase
 
 
@@ -88,6 +90,30 @@ def temporary_home(monkeypatch, temporary_folder):
     # assert that the monkeypatch is really working so that we do not
     # accidentially write somewhere else
     assert pathlib.Path.home() == temporary_folder
+
+
+@pytest.fixture
+def project_spec_file(temporary_home):
+    venv_env = {
+        'project_name': 'virtualenv_project',
+        'project_path': '/path/to/project/virtualenv_project',
+        'aiida': '1.0.0',
+        'python': '3.6',
+        'env_sub': '/path/to/project/virtualenv_project/env',
+        'src_sub': '/path/to/project/virtualenv_project/src',
+        'manager': constants.MANAGER_NAME_VENV,
+    }
+    conda_env = {
+        'project_name': 'conda_project',
+        'project_path': '/path/to/project/conda_project',
+        'aiida': '1.0.0',
+        'python': '3.6',
+        'env_sub': '/path/to/project/conda_project/env',
+        'src_sub': '/path/to/project/conda_project/src',
+        'manager': constants.MANAGER_NAME_CONDA,
+    }
+    utils.save_project_spec(venv_env)
+    utils.save_project_spec(conda_env)
 
 
 @pytest.fixture
