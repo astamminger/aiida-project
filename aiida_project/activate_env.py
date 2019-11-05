@@ -50,7 +50,7 @@ class ActivateEnvBase(object):
         if not path_to_aiida_folder.exists():
             raise Exception("Aiida subfolder not found at location {}"
                             .format(path_to_aiida_folder))
-        return path_to_aiida_folder.absolute()
+        return project_path.absolute()
 
     def validate_activatable(self):
         """Validate activation is possible in the current shell"""
@@ -109,21 +109,21 @@ class ActivateEnvBash(ActivateEnvBase):
 
     # bash specifica
     set_var = "export {}='{}'"
-    unset_envvar = "unset {}"
+    unset_var = "unset {}"
     cmd_join = ";"
 
     def __init__(self, manager, project_name):
         """Initialize internal variables."""
         project_spec = self.load_project_spec(project_name)
-        self.env_name = project_name
+        env_name = project_name
         # set required activation / deactivation commands for manager
         if manager == constants.MANAGER_NAME_CONDA:
             self.check_conda_avail()
-            self.activate_commands = ["conda activate {}".format(manager)]
+            self.activate_commands = ["conda activate {}".format(env_name)]
             self.deactivate_commands = ["conda deactivate"]
         elif manager == constants.MANAGER_NAME_VENV:
             venv_activate_script = self.check_virtualenv_path(project_spec)
-            self.activate_commands = [". {}".format(venv_activate_script)]
+            self.activate_commands = [". '{}'".format(venv_activate_script)]
             self.deactivate_commands = ["deactivate"]
         else:
             raise Exception("manager '{}' not supported by bash activator"
@@ -136,10 +136,10 @@ class ActivateEnvBash(ActivateEnvBase):
         self.deactivate_commands.append("complete -r verdi")
 
         # define environment variables to be set
-        self.aiida_path = self.get_aiida_path_from_spec(project_spec)
-        self.envvars = [
-            ('AIIDA_PATH', self.aiida_path),
-            ('AIIDA_PROJECT_ACTIVE', self.env_name),
+        aiida_path = self.get_aiida_path_from_spec(project_spec)
+        self.environment_variables = [
+            ('AIIDA_PATH', aiida_path),
+            ('AIIDA_PROJECT_ACTIVE', env_name),
         ]
 
     def check_conda_avail(self):
