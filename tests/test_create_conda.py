@@ -90,12 +90,15 @@ def test_create_project_environment_success(temporary_folder, temporary_home,
     loaded_specs = utils.load_project_spec()
     assert 'conda_project' in loaded_specs.keys()
     contents = loaded_specs['conda_project']
-    assert contents['project_path'] == str(pathlib.Path(temporary_folder))
+    ppath = pathlib.Path(temporary_folder)
+    srcpath = ppath / 'conda_project' / constants.DEFAULT_SRC_SUBFOLDER
+    envpath = ppath / 'conda_project' / constants.DEFAULT_ENV_SUBFOLDER
+    assert contents['project_path'] == str(ppath)
     assert contents['aiida'] == '0.0.0'
     assert contents['python'] == '0.0'
-    assert contents['env_sub'] == constants.DEFAULT_ENV_SUBFOLDER
-    assert contents['src_sub'] == constants.DEFAULT_SRC_SUBFOLDER
-    assert contents['manager'] == CreateEnvConda.__name__
+    assert contents['env_sub'] == str(envpath)
+    assert contents['src_sub'] == str(srcpath)
+    assert contents['manager'] == constants.MANAGER_NAME_CONDA
 
 
 def test_create_project_environment_failure(temporary_folder, temporary_home,
