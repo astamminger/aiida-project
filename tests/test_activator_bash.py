@@ -14,6 +14,8 @@ from aiida_project.constants import AIIDA_SUBFOLDER
 
 def test_conda_activation(project_spec_file, fake_popen):
     """Test environment activation for conda environment manager."""
+    # setup fake Popen
+    fake_popen.set_cmd_attrs('conda', returncode=0)
     # physically setup all folders and initialize activator class
     base_path = project_spec_file['conda_project']['project_path']
     pathlib.Path(base_path).mkdir()
@@ -38,7 +40,7 @@ def test_conda_activation(project_spec_file, fake_popen):
     assert deactivate_command == deactivate_wanted
     # finally check that a missing conda exectuable results in a
     # meaningful error message
-    fake_popen.returncode = 1
+    fake_popen.set_cmd_attrs('conda', returncode=1)
     with pytest.raises(Exception) as exception:
         bash = ActivateEnvBash('conda', 'conda_project')
     assert "conda does not seem to be available" in str(exception.value)
@@ -48,6 +50,8 @@ def test_conda_activation(project_spec_file, fake_popen):
 
 def test_venv_activation(project_spec_file, fake_popen):
     """Test environment activation for conda environment manager."""
+    # setup fake Popen
+    fake_popen.set_cmd_attrs('virtualenv', returncode=0)
     # physically setup all folders and initialize activator class
     base_path = project_spec_file['virtualenv_project']['project_path']
     env_path = project_spec_file['virtualenv_project']['env_sub']

@@ -185,6 +185,7 @@ def test_build_source_url():
 
 def test_clone_git_repo_to_disk(fake_popen):
     """Test cloning of github repositories to disk"""
+    fake_popen.set_cmd_attrs('git', returncode=0)
     # check cloning without defined branch
     location_on_disk = "/some/random/path/on/disk"
     github_url = "https://github.com/user1/repo1"

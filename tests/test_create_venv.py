@@ -11,16 +11,20 @@ from aiida_project import constants
 from aiida_project import utils
 
 
-def test_python_version(valid_env_input):
+def test_python_version(valid_env_input, fake_popen):
     """Test python flag is created correctly."""
+    fake_popen.set_cmd_attrs('virtualenv --version', returncode=0)
+    fake_popen.set_cmd_attrs('git --version', returncode=0)
     valid_env_input['python_version'] = '123.456'
     env_creator = CreateEnvVirtualenv(**valid_env_input)
     wanted_python_flag = "--python=python123.456"
     assert wanted_python_flag in env_creator.env_flags
 
 
-def test_aiida_version(valid_env_input):
+def test_aiida_version(valid_env_input, fake_popen):
     """Test aiida package definition is correct."""
+    fake_popen.set_cmd_attrs('virtualenv --version', returncode=0)
+    fake_popen.set_cmd_attrs('git --version', returncode=0)
     # index package
     valid_env_input['aiida_version'] = "1.2.3b56"
     env_creator = CreateEnvVirtualenv(**valid_env_input)
@@ -39,7 +43,6 @@ def test_aiida_version(valid_env_input):
     # source package with extrs
     valid_env_input['aiida_version'] = 'aiidateam/aiida-core:develop[extra]'
     env_creator = CreateEnvVirtualenv(**valid_env_input)
-    print(env_creator.__dict__)
     wanted_format = "aiidateam/aiida-core:develop[extra]"
     assert wanted_format in env_creator.pkg_arguments
 
@@ -47,6 +50,8 @@ def test_aiida_version(valid_env_input):
 def test_create_project_environment_success(temporary_folder, temporary_home,
                                             fake_popen):
     """Test full cycle for creating an environment from conda."""
+    fake_popen.set_cmd_attrs('virtualenv --version', returncode=0)
+    fake_popen.set_cmd_attrs('git --version', returncode=0)
     # make sure we write to the correct directory
     assert pathlib.Path.home() == temporary_folder
     arguments = {
@@ -58,7 +63,7 @@ def test_create_project_environment_success(temporary_folder, temporary_home,
                      'aiidateam/aiida-ase:devel[extras1]']
     }
     creator = CreateEnvVirtualenv(**arguments)
-    fake_popen.returncode = 0
+    fake_popen.set_cmd_attrs('virtualenv', returncode=0)
     creator.create_aiida_project_environment()
     base_folder = str((creator.env_folder / creator.proj_name).absolute())
     src_folder = creator.src_folder.absolute()
@@ -100,6 +105,8 @@ def test_create_project_environment_success(temporary_folder, temporary_home,
 def test_create_project_environment_failure(temporary_folder, temporary_home,
                                             fake_popen):
     """Test full cycle for creating an environment from conda."""
+    fake_popen.set_cmd_attrs('virtualenv --version', returncode=0)
+    fake_popen.set_cmd_attrs('git --version', returncode=0)
     # make sure we write to the correct directory
     assert pathlib.Path.home() == temporary_folder
     arguments = {
@@ -110,10 +117,8 @@ def test_create_project_environment_failure(temporary_folder, temporary_home,
         'packages': ['aiida-vasp[extras1]', 'pymatgen==2019.3.13',
                      'aiidateam/aiida-ase:devel[extras1]']
     }
-    fake_popen.returncode = 0
     creator = CreateEnvVirtualenv(**arguments)
-    fake_popen.returncode = 1
-    fake_popen.stderr = b'Venv'
+    fake_popen.set_cmd_attrs('virtualenv', returncode=1, stderr=b'Venv')
     with pytest.raises(Exception) as exception:
         creator.create_aiida_project_environment()
     expected_exception_msg = "Environment setup failed (STDERR: Venv)"
@@ -123,3 +128,31 @@ def test_create_project_environment_failure(temporary_folder, temporary_home,
     path_to_config = (pathlib.Path.home() / constants.CONFIG_FOLDER
                       / constants.PROJECTS_FILE)
     assert path_to_config.exists() is False
+
+
+def test_git_is_ignored_for_missing_source(temporary_folder, temporary_home,
+                                           fake_popen):
+    """Test missing git does not trigger if no source packages are defined."""
+    # test that git raises in case of source files defined
+    fake_popen.set_cmd_attrs('virtualenv --version', returncode=0)
+    fake_popen.set_cmd_attrs('git --version', returncode=1)
+    arguments = {
+        'proj_name': 'venv_project',
+        'proj_path': pathlib.Path(temporary_folder),
+        'python_version': '0.0',
+        'aiida_version': '0.0.0',
+        'packages': ['aiida-vasp[extras1]', 'pymatgen==2019.3.13',
+                     'aiidateam/aiida-ase:devel[extras1]']
+    }
+    with pytest.raises(Exception) as exception:
+        creator = CreateEnvVirtualenv(**arguments)
+    assert "Unable to find `git` on the system" in str(exception.value)
+    # this should not raise because there is no source defined
+    arguments = {
+        'proj_name': 'venv_project',
+        'proj_path': pathlib.Path(temporary_folder),
+        'python_version': '0.0',
+        'aiida_version': '0.0.0',
+        'packages': ['aiida-vasp[extras1]', 'pymatgen==2019.3.13']
+    }
+    creator = CreateEnvVirtualenv(**arguments)

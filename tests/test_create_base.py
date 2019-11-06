@@ -91,7 +91,6 @@ def test_env_creation_routine(env_creator, fake_popen):
         'args': " ".join(env_creator.env_arguments),
     }
     wanted_cmd = '{exe} {cmds} {flags} {args}'.format(**cmd_args)
-    fake_popen.returncode = 0
     env_creator.build_python_environment()
     generated_cmd, = fake_popen.args[0]
     assert generated_cmd == wanted_cmd
