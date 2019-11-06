@@ -19,6 +19,7 @@ setup(
         "pathlib; python_version>='3.0'",
         "click",
         "click-spinner",
+        "pyyaml",
     ],
     extras_require={
         'testing': ['pytest', 'pytest-cov'],
