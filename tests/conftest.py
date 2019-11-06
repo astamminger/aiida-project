@@ -69,14 +69,32 @@ def fake_popen(monkeypatch):
         stderr = b''
         args = []
         kwargs = []
+        cmd_defs = {}
 
         def __init__(self, *args, **kwargs):
             # store arguments for later analysis
             self.args.append(args)
             self.kwargs.append(kwargs)
+            # all commands used are called with shell=True and are composed
+            # of a single string
+            self.cmd = " ".join(args)
+
+        @classmethod
+        def set_cmd_attrs(cls, cmd, returncode=1, stdout=b"", stderr=b""):
+            command_attrs = {
+                'stdout': stdout,
+                'stderr': stderr,
+                'returncode': returncode,
+            }
+            cls.cmd_defs.update({cmd: command_attrs})
 
         def communicate(self, input=None):
-            # do nothing but return the fake stdout / stderr
+            # return defined attrs if command is in command attributes dict
+            for (command, cmd_attrs) in self.cmd_defs.items():
+                if command in self.cmd:
+                    self.returncode = cmd_attrs['returncode']
+                    return (cmd_attrs['stdout'], cmd_attrs['stderr'])
+            # else: return the defaults
             return (self.stdout, self.stderr)
     monkeypatch.setattr('subprocess.Popen', FakePopen)
     yield FakePopen
