@@ -153,6 +153,8 @@ def test_check_command():
     assert result is False
 
 
+# TODO: Consider splitting this command and implement separate test
+#       functions for windows and *nix
 def test_run_command():
     """Test run_command() function running shell commands."""
     # test simple run (don't use quotations to produce the same results
@@ -167,7 +169,10 @@ def test_run_command():
     envvar = "set by calling python"
     env = os.environ.copy()
     env["CHANGED_ENVVAR"] = envvar
-    testcmd = 'echo $CHANGED_ENVVAR'
+    if sys.platform == 'win32':
+        testcmd = 'echo %CHANGED_ENVVAR%'
+    else:
+        testcmd = 'echo $CHANGED_ENVVAR'
     errno, stdout, stderr = utils.run_command(testcmd, shell=True, env=env)
     assert errno == 0
     assert stdout.rstrip() == envvar
