@@ -163,10 +163,10 @@ class ActivateEnvBash(ActivateEnvBase):
 
 
 def get_activator(shell):
-    if shell not in constants.COMPATIBLE_SHELLS:
+    if shell not in constants.SUPPORTED_SHELLS:
         raise Exception("Unsupported shell type `{}` (currently supported "
                         "shell types: {})"
-                        .format(shell, constants.COMPATIBLE_SHELLS))
+                        .format(shell, constants.SUPPORTED_SHELLS))
     activator_map = {
         constants.SHELL_NAME_BASH: ActivateEnvBash,
     }
