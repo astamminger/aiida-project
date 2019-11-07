@@ -11,7 +11,7 @@ else:
 
 import click
 
-from aiida_project.create_env import get_env_creator
+from aiida_project.create import get_creator
 
 
 @click.group('aiida-project')
@@ -72,7 +72,7 @@ def create(name, manager, aiida_core, python_version, packages, path):
         else:
             sys.exit(1)
     # fetch and setup the chosen environment manager
-    EnvCreator = get_env_creator(manager)
+    EnvCreator = get_creator(manager)
     creator = EnvCreator(proj_name=name, proj_path=pathlib.Path(path),
                          python_version=python_version,
                          aiida_version=aiida_core, packages=list(packages))
