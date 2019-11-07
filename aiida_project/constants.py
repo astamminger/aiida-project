@@ -42,3 +42,8 @@ SUPPORTED_MANAGERS = [
     MANAGER_NAME_CONDA,
     MANAGER_NAME_VENV,
 ]
+
+# map shell types to their corresponding init scrips
+SCRIPT_MAP = {
+    SHELL_NAME_BASH: 'aiida_project.sh',
+}
