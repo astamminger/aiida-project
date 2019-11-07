@@ -12,7 +12,7 @@ from click.testing import CliRunner
 
 from aiida_project import utils
 from aiida_project import constants
-from aiida_project.create_env import CreateEnvBase
+from aiida_project.create import CreateEnvBase
 
 
 @pytest.fixture

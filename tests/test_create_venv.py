@@ -6,7 +6,7 @@ if sys.version_info >= (3, 0):
 else:
     import pathlib2 as pathlib
 
-from aiida_project.create_env import CreateEnvVirtualenv
+from aiida_project.create import CreateEnvVirtualenv
 from aiida_project import constants
 from aiida_project import utils
 

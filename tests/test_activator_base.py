@@ -9,7 +9,7 @@ else:
 import pytest
 
 from aiida_project.constants import AIIDA_SUBFOLDER
-from aiida_project.activate_env import ActivateEnvBase
+from aiida_project.activate import ActivateEnvBase
 
 
 def test_load_project_spec(project_spec_file):

@@ -8,7 +8,7 @@ else:
 
 import pytest
 
-from aiida_project.activate_env import ActivateEnvBash
+from aiida_project.activate import ActivateEnvBash
 from aiida_project.constants import AIIDA_SUBFOLDER
 
 

@@ -6,7 +6,7 @@ if sys.version_info >= (3, 0):
 else:
     import pathlib2 as pathlib
 
-from aiida_project.create_env import CreateEnvBase
+from aiida_project.create import CreateEnvBase
 
 
 def test_has_source():
