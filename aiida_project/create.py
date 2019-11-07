@@ -446,13 +446,13 @@ class CreateEnvVirtualenv(CreateEnvBase):
         self.create_spec_entry()
 
 
-def get_env_creator(manager):
+def get_creator(manager):
+    if manager not in constants.SUPPORTED_MANAGERS:
+        raise Exception("Unknown environment manager `{}` (available "
+                        "managers: {})"
+                        .format(manager, constants.SUPPORTED_MANAGERS))
     creator_map = {
         constants.MANAGER_NAME_CONDA: CreateEnvConda,
         constants.MANAGER_NAME_VENV: CreateEnvVirtualenv,
     }
-    try:
-        return creator_map[manager]
-    except KeyError:
-        raise Exception("Unknown environment manager `{}` (available "
-                        "managers: {})".format(manager, creator_map.keys()))
+    return creator_map[manager]
