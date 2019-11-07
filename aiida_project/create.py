@@ -314,7 +314,7 @@ class CreateEnvConda(CreateEnvBase):
     def create_spec_entry(self):
         args = [
             self.proj_name,
-            self.proj_path.absolute(),
+            self.proj_folder.absolute(),
             constants.MANAGER_NAME_CONDA,
             self._aiida_version,
             self._python_version,
@@ -415,7 +415,7 @@ class CreateEnvVirtualenv(CreateEnvBase):
             aiida_version = aiida_pkg_def
         args = [
             self.proj_name,
-            self.proj_path.absolute(),
+            self.proj_folder.absolute(),
             constants.MANAGER_NAME_VENV,
             self._aiida_version,
             self._python_version,
