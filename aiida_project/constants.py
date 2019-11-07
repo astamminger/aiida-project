@@ -29,10 +29,16 @@ SHELL_NAME_BASH = 'bash'
 
 # compatible shells
 if ON_WIN:
-    COMPATIBLE_SHELLS = [
+    SUPPORTED_SHELLS = [
         SHELL_NAME_BASH,
     ]
 else:
-    COMPATIBLE_SHELLS = [
+    SUPPORTED_SHELLS = [
         SHELL_NAME_BASH,
     ]
+
+# compatible environment managers
+SUPPORTED_MANAGERS = [
+    MANAGER_NAME_CONDA,
+    MANAGER_NAME_VENV,
+]
