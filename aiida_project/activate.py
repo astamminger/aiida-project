@@ -143,6 +143,42 @@ class ActivateEnvBash(ActivateEnvBase):
             ('AIIDA_PROJECT_ACTIVE', env_name),
         ]
 
+    @classmethod
+    def _setup(cls, executable):
+        """
+        Make aiida-project available in the bash shell.
+
+        :param executable: path to the aiida-project executable file
+        :type executable: pathlib.Path
+        :returns: multiline string to be evaluated by the calling shell
+        :rtype: str
+        """
+        setup_string = \
+        (
+            cls.set_var.format('AIIDA_PROJECT_EXE', executable),  # noqa: E122
+            'function _aiida_project_activate() {',
+            '  local mode=$1',  # activate / deactivate (must be first arg!)
+            '  shift',          # remove $1 from the list of args $@
+            '  cmd="$("$AIIDA_PROJECT_EXE" "$mode" bash "$@")" || return $?',
+            '  eval "$cmd"',
+            '}',
+            'function aiida-project-bash() {',
+            '  if [ "$#" -lt 1 ]; then',
+            '    "$AIIDA_PROJECT_EXE"',
+            '    return $?',
+            '  fi',
+            '  case "$1" in',
+            '    activate|deactivate)',
+            '      _aiida_project_activate "$@"',
+            '    ;;',
+            '  *)',
+            '      "$AIIDA_PROJECT_EXE" "$@"',
+            '    ;;',
+            '  esac',
+            '}',
+        )
+        return "\n".join(setup_string)
+
     def check_conda_avail(self):
         """check if conda command is available in shell."""
         conda_available = utils.check_command_avail('conda')
