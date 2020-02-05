@@ -12,6 +12,9 @@ else:
 import click
 
 from aiida_project.create import get_creator
+from aiida_project.activate import get_activator
+from aiida_project import constants
+from aiida_project import utils
 
 
 @click.group('aiida-project')
@@ -80,8 +83,25 @@ def create(name, manager, aiida_core, python_version, packages, path):
 
 
 @main.command()
-@click.argument('name', type=str)
-def remove(name):
+@click.argument('shelltype', type=str)
+def init(shelltype):
+    """
+    Initialize aiida-project for the shell you are running
+    """
+    if shelltype not in constants.SUPPORTED_SHELLS:
+        raise Exception("Unsupported shell type `{}` (currently supported "
+                        "shell types: {})"
+                        .format(shelltype, constants.SUPPORTED_SHELLS))
+    activator = get_activator(shelltype)
+    executable = pathlib.Path(sys.argv[0]).absolute()
+    # print shell script required to activate the functionality of
+    # aiida-project for a given shell type
+    print(activator._setup(executable))
+
+
+@main.command()
+@click.argument('project_name', type=str)
+def remove(project_name):
     """
     Remove an existing AiiDA project environment.
 
@@ -93,7 +113,23 @@ def remove(name):
     This action will **permanently** delete all data contained in the
     project folder including databases, repositories and configs.
     """
-    print("Delete")
+    # check if the project exists before we go any further
+    if not utils.project_name_exists(project_name):
+        raise Exception("unable to delete project '{}' because it does not "
+                        "exist")
+    print("\nWARNING: You are about to delete the AiiDA project '{}'"
+          .format(project_name))
+    print("\nTHIS WILL DELETE THE PROJECT AND ALL OF ITS CONTENTS!\n")
+    # make it double to be sure. annoying? YES! But I learned my lessons
+    # from using rm -rf or dd :P
+    delete = click.confirm("Do you really want to proceed?")
+    if delete:
+        delete_really = click.confirm("This is your last chance, really?")
+    if delete and delete_really:
+        project_spec = utils.load_project_spec()[project_name]
+        project_path = project_spec['project_path']
+    else:
+        print("WON'T DELETE")
 
 #
 # using activate / deactivate we communicate with the calling shell by
@@ -115,6 +151,7 @@ def activate(ctx, args, _help):
         print("echo \"{}\"".format(help_txt))
     else:
         print("echo This will be sourced")
+        print("echo args {}".format(sys.argv[1:]))
         print("export AIIDA_PATH=/home/andreas/.aiida")
         print("conda activate aiida-project-manager")
 
@@ -126,11 +163,11 @@ def activate(ctx, args, _help):
 @click.pass_context
 def deactivate(ctx, args, _help):
     """
-    Deactivate a loaded AiiDA project environment.
+    Deactivate an AiiDA project environment.
     """
     # we expect only one argument the shell-type
     if _help or len(args) != 1:
-        help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "env_name")
+        help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "")
         print("echo \"{}\"".format(help_txt))
     else:
         print("echo This will be sourced")

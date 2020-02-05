@@ -20,6 +20,8 @@ setup(
         "click",
         "click-spinner",
         "pyyaml",
+        # bug in conda < 4.6
+        "conda>=4.6",
     ],
     extras_require={
         'testing': ['pytest', 'pytest-cov'],
