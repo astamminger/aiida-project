@@ -65,7 +65,7 @@ def create(name, manager, aiida_core, python_version, packages, path):
     defined extras.
     """
     # first check if the project folder exists already
-    project_folder = path / name
+    project_folder = pathlib.Path(path) / name
     if project_folder.exists():
         msg = ("Cannot create project folder '{}' because it already exists! "
                "Delete?".format(project_folder))
