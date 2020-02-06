@@ -116,7 +116,7 @@ class ActivateEnvBash(ActivateEnvBase):
     def __init__(self, manager, project_name):
         """Initialize internal variables."""
         project_spec = self.load_project_spec(project_name)
-        env_name = project_name
+        env_name = project_spec['env_sub']
         # set required activation / deactivation commands for manager
         if manager == constants.MANAGER_NAME_CONDA:
             self.check_conda_avail()
