@@ -128,8 +128,10 @@ def remove(project_name):
     if delete and delete_really:
         project_spec = utils.load_project_spec()[project_name]
         project_path = project_spec['project_path']
+        # TODO: add the actual deletion
     else:
-        print("WON'T DELETE")
+        print("Project not deleted!")
+
 
 #
 # using activate / deactivate we communicate with the calling shell by
@@ -150,10 +152,9 @@ def activate(ctx, args, _help):
         help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "env_name")
         print("echo \"{}\"".format(help_txt))
     else:
-        print("echo This will be sourced")
-        print("echo args {}".format(sys.argv[1:]))
-        print("export AIIDA_PATH=/home/andreas/.aiida")
-        print("conda activate aiida-project-manager")
+        Activator = get_activator(args[0])
+        env_name = args[1]
+        print(Activator(env_name).execute(mode="activate"))
 
 
 @main.command(hidden=True, add_help_option=False)
@@ -170,6 +171,7 @@ def deactivate(ctx, args, _help):
         help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "")
         print("echo \"{}\"".format(help_txt))
     else:
-        print("echo This will be sourced")
-        print("conda deactivate")
-        print("unset AIIDA_PATH")
+        # TODO: Implement actual deactivation procedure
+        # print("conda deactivate")
+        # print("unset AIIDA_PATH")
+        pass
