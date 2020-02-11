@@ -145,13 +145,11 @@ def check_command_avail(command, test_version=True):
         command_to_check = "{} --version".format(command)
     else:
         command_to_check = command
-    print("Checking '{}' ... ".format(command_to_check), end="")
     errno, stdout, stderr = run_command(command_to_check, shell=True)
     if errno:
-        print("Failed")
+        print("Failed! Command {} not found".format(command_to_check))
         return False
     else:
-        print("OK")
         return True
 
 
