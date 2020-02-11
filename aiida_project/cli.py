@@ -2,6 +2,7 @@
 
 
 import sys
+import os
 import shutil
 import re
 if sys.version_info >= (3, 0):
@@ -171,7 +172,9 @@ def deactivate(ctx, args, _help):
         help_txt = ctx.command.get_help(ctx).replace("[ARGS]...", "")
         print("echo \"{}\"".format(help_txt))
     else:
-        # TODO: Implement actual deactivation procedure
-        # print("conda deactivate")
-        # print("unset AIIDA_PATH")
-        pass
+        active_project_name = os.environ.get('AIIDA_PROJECT_ACTIVE', None)
+        if active_project_name is None:
+            raise Exception("No active project found")
+        # get activator for shell and deactivate current aiida project
+        Activator = get_activator(args[0])
+        print(Activator(active_project_name).execute(mode="deactivate"))
