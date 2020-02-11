@@ -113,10 +113,11 @@ class ActivateEnvBash(ActivateEnvBase):
     unset_var = "unset {}"
     cmd_join = ";"
 
-    def __init__(self, manager, project_name):
+    def __init__(self, project_name):
         """Initialize internal variables."""
         project_spec = self.load_project_spec(project_name)
         env_name = "{}/{}".format(project_spec['env_sub'], project_name)
+        manager = project_spec['manager']
         # set required activation / deactivation commands for manager
         if manager == constants.MANAGER_NAME_CONDA:
             self.check_conda_avail()
@@ -131,6 +132,7 @@ class ActivateEnvBash(ActivateEnvBase):
                             .format(manager))
         # enable verdi autocomplete upon activation (this is basically an
         # eval inside eval, not idead if this is a good idea)
+        self.activate_commands.append("reentry scan -r aiida")
         self.activate_commands.append("eval \"$(verdi completioncommand)\"")
 
         # setup additional deactivation commands
