@@ -131,18 +131,19 @@ class ActivateEnvBash(ActivateEnvBase):
             raise Exception("manager '{}' not supported by bash activator"
                             .format(manager))
         # enable verdi autocomplete upon activation (this is basically an
-        # eval inside eval, not idead if this is a good idea)
+        # eval inside eval)
         self.activate_commands.append("reentry scan -r aiida")
         self.activate_commands.append("eval \"$(verdi completioncommand)\"")
 
         # setup additional deactivation commands
         self.deactivate_commands.append("complete -r verdi")
 
-        # define environment variables to be set
+        # define environment variables to be set (variables defined here
+        # will automatically be unset during deactivation)
         aiida_path = self.get_aiida_path_from_spec(project_spec)
         self.environment_variables = [
             ('AIIDA_PATH', aiida_path),
-            ('AIIDA_PROJECT_ACTIVE', env_name),
+            ('AIIDA_PROJECT_ACTIVE', project_name),
         ]
 
     @classmethod
